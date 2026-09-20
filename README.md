@@ -1,46 +1,61 @@
-# 艾琳导演台 · 白模预演
+# 艾琳导演台 · 开源核心
 
-一个可本地运行的开源导演工作台：搭建 3D 场景、编排人物和摄影机、预览镜头，并导出供生视频模型参考的白模预演视频。支持内置 Three.js 预演与 Blender 高级白模。项目基于 Sam Wasserman 的 [Blockout](https://github.com/wassermanproductions/blockout) 改造，详见 [NOTICE](NOTICE) 和 [MODIFICATIONS.md](MODIFICATIONS.md)。
+把外部 Agent 做好的导演包导入桌面导演台，核对镜头卡，一键生成可编辑 3D 预演，再用本机 Blender 与 FFmpeg 输出供生视频模型参考的白模 MP4。也支持直接导入 Previs IR 或在本地识别分镜文字。项目基于 Sam Wasserman 的 [Blockout](https://github.com/wassermanproductions/blockout) 改造；来源与修改见 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md)。
 
-## 从源码运行
+## 下载与启动
 
-需要 Node.js 22.12+、[Blender](https://www.blender.org/download/) 和支持 H.264 编码的 [FFmpeg](https://ffmpeg.org/download.html)。Blender 与 FFmpeg 需自行安装；本仓库不含其可执行文件。
+Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.0-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
 
-```bash
+也可以下载源码，在 Windows PowerShell 中启动完整 UI：
+
+```powershell
+git clone https://github.com/liutongxian/ailin-director-previs.git
+cd ailin-director-previs
 npm ci
 npm run dev
 ```
 
-若可执行文件不在系统 `PATH` 中，启动前设置 `AILIN_BLENDER` 和 `BLOCKOUT_FFMPEG` 为绝对路径。例如 Windows PowerShell：
+源码运行需要 Node.js 22.12+。要导出视频，还需自行安装 [Blender](https://www.blender.org/download/) 与支持 H.264 的 [FFmpeg](https://ffmpeg.org/download.html)；Blender 高级白模需要两者，Three.js 快速白模需要 FFmpeg。若程序找不到它们，可在启动前设置绝对路径：
 
 ```powershell
-$env:AILIN_BLENDER = 'C:\Program Files\Blender Foundation\Blender 4.5\blender.exe'
+$env:AILIN_BLENDER = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
 $env:BLOCKOUT_FFMPEG = 'C:\ffmpeg\bin\ffmpeg.exe'
 npm run dev
 ```
 
-## 生成一条白模预演视频
+使用 EXE 时，先在 PowerShell 设置上述环境变量，再从同一个 PowerShell 启动 EXE；或将 Blender、FFmpeg 加入系统 `PATH`。
 
-1. 首次启动会打开一个可编辑的通用示例项目；也可在“项目与说明”中新建或打开项目。
-2. 在“搭景”中放置人物、场景和道具；在“拍摄”中调整镜头、时间线、运动轨迹和镜头时长。
-3. 打开“白模预演”，选择“高级白模 Blender”，点击“生成当前 Blender 高级白模”。
-4. 完成后在预演卡片中检查视频，并可选择“设为最终交付参考”。
+## 第一次跑通：导演包到白模视频
 
-Blender 文件位于当前项目的 `generated/blender/<镜头ID>-<任务ID>/`：包含 H.264 MP4、可继续编辑的 `.blend`、起／中／末检查图、计划 JSON 和运行日志。Three.js 白模可在同一面板单独生成。白模展示的是空间、走位、动作节奏和摄影机运动，不会代替最终的角色画面或配音。
+1. 打开“导演包”，点击“复制导演包完整提示词”，把它和自己的剧本／分镜交给外部 Agent。提示词包含规则、JSON Schema 和完整示例。带素材时交付 `.ailinpack`（ZIP，根目录含 `director.ailin.json` 和对应 `assetBindings`）；纯文本时交付 UTF-8 `.ailin.json`。
+2. 点击“导入艾琳导演包…”，选取 Agent 的文件。先看校验结果、每镜头时长、人物与机位，以及首／中／尾摘要。首次体验可直接导入仓库的 [双人调度示例](examples/双人调度.ailin.json)。
+3. 点击“一键生成全部可编辑 3D 预演”。若提示替换示例场景，确认后进入“搭景”。在“搭景”调整人物、道具、场景，在“拍摄”检查摄影机和时间线。
+4. 打开“白模交付”，选择场景和镜头，选择“高级白模 Blender”，点击“生成当前Blender高级白模”。完成后播放检查，也可设为最终交付参考。多镜头项目逐镜头选择并生成。
+5. 点击视频卡片中的“打开输出位置”。Blender 输出包含 H.264 MP4、可编辑 `.blend`、首／中／尾检查图和运行记录；将 MP4 提供给生视频模型作空间、走位和摄影机参考。
 
-外部 Agent 可通过 [本地 MCP/CLI](mcp/README.md) 导入导演包、摆放实体、编排镜头并启动 Blender 任务。仓库提供 [Previs IR 格式](previs-ir/README.md) 和通用示例；模型调用和素材获取由使用者自行配置。所有项目和导出默认保存在本机，不依赖云端服务。
+逐屏说明、外部 Agent 提示词用法、文件结构、常见报错与验收方法见 [从导演包到白模视频](docs/从导演包到白模视频.md)。
 
-## 验证
+## 界面与边界
 
-```bash
+| 页面 | 用途 |
+| --- | --- |
+| 导演包 | 导入 `.ailinpack`／`.ailin.json`，校验镜头卡与首中尾，或导入 Previs IR、TXT／MD 分镜 |
+| 搭景 | 修改每镜头的可编辑 3D 场景、人物、道具、位置和轨迹 |
+| 拍摄 | 检查机位、摄影机运动、时间线及镜头时长 |
+| 白模交付 | 按镜头运行 Three.js 或 Blender 白模，播放、打开输出目录并选定参考版本 |
+
+本开源核心是真实 Electron 桌面程序，不是静态展示页；Blender 和 FFmpeg 均由本机进程调用。它不包含商业授权、云端生视频服务、私有素材、模型 API 密钥或完整商业管理台。白模用于运动与空间参考，不替代最终生成画面、声音及人工导演判断。所有项目与输出默认保存在本机。
+
+## 开发与验证
+
+```powershell
 npm run typecheck
 npm run lint
 npm test
 npm run smoke
+npm run package:win
 ```
 
-`npm run smoke` 会启动 Electron 并真实调用 Blender 与 FFmpeg，生成约一秒的测试 MP4。运行前确认两者可执行，必要时设置上述环境变量。此仓库当前只提供源码运行方式，不提供预构建安装包。
+`npm run smoke` 在 Electron 中真实跑两条 Blender/FFmpeg 链路，其中一条从示例导演包导入开始。构建后的便携 EXE 位于 `release-open-core/`；构建者仍需自行配置 Blender 和 FFmpeg。外部 Agent 也可使用 [本地 MCP/CLI](mcp/README.md)；格式定义见 [Previs IR](previs-ir/README.md)。
 
-## 许可证与范围
-
-源码按 [Apache License 2.0](LICENSE) 发布；分发或改作时请保留原项目的 [NOTICE](NOTICE) 与修改说明。第三方依赖说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。本开源核心不含商业授权、云端生视频服务、私有剧集素材，也不附带任何第三方模型 API 密钥。
+源码按 [Apache License 2.0](LICENSE) 发布；重新分发时保留原项目 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md) 和适用的 [第三方说明](THIRD_PARTY_NOTICES.md)。

@@ -613,10 +613,10 @@ export const DIRECTOR_PACKAGE_AGENT_INSTRUCTIONS = `请把我提供的剧本、�
 11. 用 assetBindings 把 Previs IR 的人物、场景、道具或地点 ID 绑定到稳定的英文数字 assetId、状态和图片槽位；targetRefId 必须引用内嵌 Previs IR，relativePath 必须指向包内实际文件。
 12. assetBindings[].slots[].type 和 view 只能使用 Schema 枚举。每张图片填写 slotId、label、type、view、required、relativePath；已有3D文件可填写 model.relativePath。可填写 SHA-256，但不得伪造。
 13. 不得写入绝对路径、盘符、URL、反斜杠或 ..；不得携带 API Key、令牌、密码等凭据。不要把电脑上的原始路径写入清单。
-14. director.ailin.json 输出 spec="ailin-director-package"、version="1.0"。这些图片在导演台导入后直接进入资产台，不需要用户二次上传；状态仅为待复核，不得伪造批准或锁定状态。
+14. director.ailin.json 输出 spec="ailin-director-package"、version="1.0"。随包图片在导演台导入后成为项目参考素材，不需要用户二次上传；状态仅为待复核，不得伪造批准或锁定状态。
 15. 可在每个现有 stagePlans 镜头中增加 generationPrompt，写入与该镜头剧情、调度和资产一致的视频生成提示词；不要新增 deliveryPlan、参考视频或重复的素材引用结构。
 16. 白模预演由导演台根据 stagePlans 生成，不得把白模视频放进导演包。generationPrompt 只提供生成指令，不能改变 Previs IR 或 stagePlans 的剧情、站位、走位和摄影机事实。
-17. 若能创建文件，最终交付一个 .ailinpack；若当前环境只能返回文本，最终只输出一个 JSON 对象（即 director.ailin.json），不要附加 Markdown 代码围栏或解释。`
+17. 只有确实携带图片或3D模型、并提供有效 assetBindings 时才交付 .ailinpack；纯文本导演包交付单个 .ailin.json。若当前环境只能返回文本，最终只输出一个 JSON 对象，不要附加 Markdown 代码围栏或解释。`
 
 export const AILIN_DIRECTOR_PACKAGE_TEMPLATE = JSON.stringify({
   spec: 'ailin-director-package',

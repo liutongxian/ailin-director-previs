@@ -30,7 +30,7 @@ test('generates a Blender white-model video from editable staging', async () => 
       })
     })
 
-    await page.getByRole('button', { name: '白模预演' }).click()
+    await page.getByRole('button', { name: 'DELIVER', exact: true }).click()
     await expect(page.locator('.white-model-workspace')).toBeVisible()
     await page.getByRole('button', { name: '高级白模 Blender' }).click()
     await page.getByRole('button', { name: '生成当前Blender高级白模' }).click()

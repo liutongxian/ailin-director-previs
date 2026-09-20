@@ -246,6 +246,9 @@ body {
 .director-package-review > span { min-width: 0; display: flex; align-items: flex-start; gap: 6px; padding: 7px; border: 1px solid #ead7ae; border-radius: 6px; background: #fffaf0; color: #6d5630; text-align: left; font-size: 10px; line-height: 1.4; }
 .director-package-review i { flex: none; display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: #f2c873; color: #5b3d09; font-style: normal; font-weight: 800; }
 .director-package-review.current { margin-top: 10px; }
+.director-generation-prompt { grid-column: 1 / -1; margin-top: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text-dim); font-size: 11px; }
+.director-generation-prompt summary { cursor: pointer; font-weight: 700; }
+.director-generation-prompt p { display: block; margin: 6px 0 0; white-space: pre-wrap; -webkit-line-clamp: unset; }
 .director-build-all { width: 100%; margin: 5px 0 9px; }
 .director-next { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 13px; border: 1px dashed var(--border-strong); border-radius: 10px; }
 .director-next div { display: flex; flex-direction: column; gap: 4px; }
@@ -733,6 +736,11 @@ input[type='color'] {
 .deliver-layout { width: 100%; height: 100%; min-width: 0; min-height: 0; overflow: hidden; }
 .deliver-export-runtime { position: fixed; left: -10000px; top: 0; width: 320px; height: 180px; overflow: hidden; opacity: 0; pointer-events: none; }
 .deliver-export-runtime canvas { display: block; width: 100%; height: 100%; }
+.core-delivery-content { box-sizing: border-box; height: 100%; overflow-y: auto; padding: 24px; background: var(--bg); }
+.core-delivery-content > .director-heading, .core-delivery-content > .core-delivery-selectors, .core-delivery-content > .white-model-workspace { max-width: 1100px; margin-left: auto; margin-right: auto; }
+.core-delivery-selectors { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.core-delivery-selectors label { display: flex; flex-direction: column; gap: 5px; min-width: 200px; font-size: 11px; color: var(--text-dim); }
+.core-delivery-selectors select { width: 100%; }
 .deliver-panel { display: flex; flex-direction: column; width: 100%; height: 100%; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg); }
 .deliver-workspace-header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 22px 14px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
 .deliver-workspace-header > div { min-width: 0; }

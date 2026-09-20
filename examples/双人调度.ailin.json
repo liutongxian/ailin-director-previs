@@ -1,0 +1,94 @@
+{
+  "spec": "ailin-director-package",
+  "version": "1.0",
+  "source": {
+    "name": "双人调度示例.txt",
+    "text": "人物A从左侧进入房间，人物B在右侧等待。摄影机后拉，最后看到两人的空间关系。3秒，16:9。"
+  },
+  "previsIR": {
+    "spec": "previs-ir",
+    "version": "1.0",
+    "project": { "name": "双人调度示例", "aspect": "16:9", "fps": 24 },
+    "assets": [
+      { "id": "CHAR-A", "name": "人物A", "type": "character", "semanticType": "person" },
+      { "id": "CHAR-B", "name": "人物B", "type": "character", "semanticType": "person" }
+    ],
+    "locations": [
+      { "id": "LOC-ROOM", "name": "房间", "semanticType": "interior room" }
+    ],
+    "shots": [
+      {
+        "id": "SHOT-001",
+        "name": "双人调度",
+        "sourceText": "人物A从画面左侧进入，人物B在右侧等待，摄影机后拉形成双人关系。",
+        "locationId": "LOC-ROOM",
+        "duration": 3,
+        "aspect": "16:9",
+        "entities": [
+          { "refId": "CHAR-A", "placement": { "screen": "left", "depth": "midground" } },
+          { "refId": "CHAR-B", "placement": { "screen": "right", "depth": "midground" } }
+        ],
+        "actions": [
+          { "actorId": "CHAR-A", "type": "enter", "to": { "screen": "left", "depth": "midground" } }
+        ],
+        "spatialRelations": [
+          { "subjectId": "CHAR-A", "relation": "left_of", "objectId": "CHAR-B" }
+        ],
+        "camera": { "movement": "dolly_out", "subjects": ["CHAR-A", "CHAR-B"] },
+        "lighting": { "preset": "day" }
+      }
+    ],
+    "unresolved": []
+  },
+  "stagePlans": [
+    {
+      "shotId": "SHOT-001",
+      "coordinateSystem": "director-desk-y-up",
+      "duration": 3,
+      "aspect": "16:9",
+      "lighting": "day",
+      "entities": [
+        {
+          "refId": "CHAR-A",
+          "position": { "x": -1.4, "y": 0, "z": 0.2 },
+          "rotationY": 0.25,
+          "marks": [
+            { "time": 0, "position": { "x": -4.8, "y": 0, "z": 2.8 }, "gait": "walk" },
+            { "time": 2, "position": { "x": -1.4, "y": 0, "z": 0.2 }, "gait": "stand" }
+          ],
+          "basis": "agent-proposal",
+          "reason": "用通用房间比例安排入场动线，须由导演复核。",
+          "confidence": 0.75
+        },
+        {
+          "refId": "CHAR-B",
+          "position": { "x": 1.4, "y": 0, "z": 0 },
+          "rotationY": -0.2,
+          "marks": [
+            { "time": 0, "position": { "x": 1.4, "y": 0, "z": 0 }, "gait": "stand" }
+          ],
+          "basis": "spatial-rule",
+          "reason": "保持人物B位于人物A右侧。",
+          "confidence": 0.9
+        }
+      ],
+      "camera": {
+        "rig": "dolly",
+        "marks": [
+          { "time": 0, "position": { "x": 0.8, "y": 1.7, "z": 5.2 }, "aimAt": { "x": 1.4, "y": 1.25, "z": 0 }, "focalLength": 40, "basis": "agent-proposal", "reason": "开头主要交代人物B。", "confidence": 0.76 },
+          { "time": 3, "position": { "x": -4.8, "y": 2.3, "z": 8.2 }, "aimAt": { "x": 0, "y": 1.2, "z": 0 }, "focalLength": 40, "basis": "spatial-rule", "reason": "尾帧完整交代双人关系。", "confidence": 0.84 }
+        ]
+      },
+      "review": {
+        "start": "人物B在右侧，人物A尚未进入。",
+        "middle": "人物A从左侧进入，摄影机开始后拉。",
+        "end": "人物A在左，人物B在右，房间和两人关系清楚。"
+      },
+      "generationPrompt": "保持两位人物的身份与左右空间关系；人物A从左进入，摄影机后拉。",
+      "unresolved": [
+        { "field": "scene.absoluteDimensions", "reason": "没有真实尺度资料，采用通用室内比例。" }
+      ]
+    }
+  ],
+  "unresolved": []
+}

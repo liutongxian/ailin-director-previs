@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import {
   AILIN_DIRECTOR_PACKAGE_TEMPLATE,
   AILIN_DIRECTOR_PACKAGE_ASSET_BINDINGS_EXAMPLE,
@@ -9,6 +11,17 @@ import {
 } from '@engine/director-package'
 
 describe('Ai Lin Director Package 1.0', () => {
+  it('keeps the public import sample valid and buildable', () => {
+    const sample = readFileSync(resolve('examples/双人调度.ailin.json'), 'utf8')
+    const parsed = parseDirectorPackage(sample)
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    const cards = directorPackageToStoryboardCards(parsed.package)
+    expect(cards).toHaveLength(1)
+    expect(cards[0]?.plan.entities.filter((entity) => entity.name === '人物A' || entity.name === '人物B')).toHaveLength(2)
+    expect(cards[0]?.plan.camera.marks).toHaveLength(2)
+  })
+
   it('parses the complete example and preserves exact staging separately from Previs IR', () => {
     const parsed = parseDirectorPackage(AILIN_DIRECTOR_PACKAGE_TEMPLATE)
     expect(parsed.ok).toBe(true)
@@ -63,7 +76,7 @@ describe('Ai Lin Director Package 1.0', () => {
     expect(DIRECTOR_PACKAGE_AGENT_INSTRUCTIONS).toContain('assetBindings')
     expect(DIRECTOR_PACKAGE_AGENT_INSTRUCTIONS).toContain('relativePath')
     expect(DIRECTOR_PACKAGE_AGENT_INSTRUCTIONS).toContain('不得写入绝对路径')
-    expect(DIRECTOR_PACKAGE_AGENT_INSTRUCTIONS).toContain('导入后直接进入资产台')
+    expect(DIRECTOR_PACKAGE_AGENT_INSTRUCTIONS).toContain('导入后成为项目参考素材')
     expect(AILIN_DIRECTOR_PACKAGE_SCHEMA.properties).toHaveProperty('assetBindings')
     expect(AILIN_DIRECTOR_PACKAGE_ASSET_BINDINGS_EXAMPLE).toContain('assets/characters/person-a/front.png')
   })

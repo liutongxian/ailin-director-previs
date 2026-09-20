@@ -1,0 +1,25 @@
+appId: com.tongxian.ailin-director-previs
+productName: 艾琳导演台-开源核心
+asar: true
+directories:
+  output: release-open-core
+artifactName: AilinDirectorPrevis-${version}-win-x64.${ext}
+files:
+  - out/**
+  - package.json
+  - LICENSE
+  - NOTICE
+  - MODIFICATIONS.md
+extraResources:
+  - from: scripts/blender
+    to: blender
+    filter:
+      - '*.py'
+win:
+  icon: build/icon.ico
+  executableName: 艾琳导演台-开源核心
+  target:
+    - target: portable
+      arch:
+        - x64
+npmRebuild: false

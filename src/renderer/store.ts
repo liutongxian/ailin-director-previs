@@ -242,7 +242,7 @@ function reconcileSelection(doc: ProjectDoc, sceneId: string | null, shotId: str
 }
 
 export const useStore = create<BlockoutState>((set, get) => ({
-  mode: 'stage',
+  mode: 'director',
   projectFolder: null,
   doc: null,
   sceneId: null,
@@ -276,7 +276,7 @@ export const useStore = create<BlockoutState>((set, get) => ({
       projectFolder: folder,
       sceneId: scene.id,
       shotId: scene.shots[0]!.id,
-      mode: 'stage',
+      mode: 'director',
       selection: null,
       undoStack: [],
       redoStack: [],
@@ -294,7 +294,7 @@ export const useStore = create<BlockoutState>((set, get) => ({
       projectFolder: folder,
       sceneId: scene.id,
       shotId: scene.shots[0]!.id,
-      mode: 'stage',
+      mode: 'director',
       selection: null,
       undoStack: [],
       redoStack: [],
@@ -316,7 +316,7 @@ export const useStore = create<BlockoutState>((set, get) => ({
       projectFolder: folder,
       sceneId: scene?.id ?? null,
       shotId: scene?.shots[0]?.id ?? null,
-      mode: 'stage',
+      mode: 'director',
       selection: null,
       undoStack: [],
       redoStack: [],

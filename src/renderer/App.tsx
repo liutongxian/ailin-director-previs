@@ -5,6 +5,8 @@ import { Viewport } from './viewport/Viewport'
 import { Library } from './panels/Library'
 import { Inspector } from './panels/Inspector'
 import { ProjectRail } from './panels/ProjectRail'
+import { DirectorCorePanel } from './panels/DirectorCorePanel'
+import { WhiteModelWorkspace } from './panels/WhiteModelWorkspace'
 import { Timeline } from './panels/Timeline'
 import { Toasts } from './panels/Toasts'
 import { HelpOverlay, BlockingCoach } from './panels/Help'
@@ -24,6 +26,8 @@ export function App(): JSX.Element {
   const loadFromJson = useStore((state) => state.loadFromJson)
   const markSaved = useStore((state) => state.markSaved)
   const setMode = useStore((state) => state.setMode)
+  const scene = useStore((state) => state.scene())
+  const shot = useStore((state) => state.shot())
   const toast = useStore((state) => state.toast)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const started = useRef(false)
@@ -151,27 +155,43 @@ export function App(): JSX.Element {
   return (
     <div className={`app ${PLATFORM_CLASS}`}>
       <div className="titlebar">
-        <span className="app-name">艾琳导演台 · 白模预演</span>
+        <span className="app-name">艾琳导演台 · 开源核心</span>
         <span style={{ color: 'var(--text-faint)', fontSize: 12 }}>{doc.name}{dirty ? ' •' : ''}</span>
         <div className="mode-switch">
+          <button aria-label="DIRECTOR" className={mode === 'director' ? 'active' : ''} onClick={() => setMode('director')}>导演包</button>
           <button aria-label="STAGE" className={mode === 'stage' ? 'active' : ''} onClick={() => setMode('stage')}>{t('mode.stage')}</button>
           <button aria-label="SHOOT" className={mode === 'shoot' ? 'active' : ''} onClick={() => setMode('shoot')}>{t('mode.shoot')}</button>
+          <button aria-label="DELIVER" className={mode === 'deliver' ? 'active' : ''} onClick={() => setMode('deliver')}>白模交付</button>
         </div>
         <button className="btn small" aria-label="Save" onClick={() => void save()}>{t('common.save')}</button>
         <button className="btn small" onClick={() => setSettingsOpen(true)}>项目与说明</button>
         <button className="btn small" onClick={() => useStore.getState().setHelpOpen(true)}>{t('common.help')}</button>
       </div>
-      <div className="main">
-        <div className="panel">
-          <ProjectRail />
-          {mode === 'stage' && <Library />}
+      {mode === 'director' ? (
+        <div className="director-layout">
+          <div className="panel director-rail"><ProjectRail /></div>
+          <DirectorCorePanel />
+          <div className="director-preview"><Viewport /><span className="director-preview-label">当前可编辑 3D 场景</span></div>
         </div>
-        <div className="center-column">
-          <div className="viewport-wrap"><Viewport /></div>
-          {mode === 'shoot' && <Timeline />}
+      ) : mode === 'deliver' ? (
+        <div className="deliver-layout">
+          <div className="deliver-export-runtime"><Viewport /></div>
+          <div className="core-delivery-content">
+            <div className="director-heading"><div><div className="director-kicker">可编辑场景 → MP4 白模参考</div><h1>白模交付</h1><p>逐镜头选择 Three.js 快速白模或 Blender 高级白模。高级方式真实调用本机 Blender 与 FFmpeg，输出 MP4、.blend 和检查图。</p></div></div>
+            <div className="core-delivery-selectors">
+              <label>场景<select aria-label="交付场景" value={scene?.id ?? ''} onChange={(event) => useStore.getState().selectScene(event.target.value)}>{doc.scenes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+              <label>镜头<select aria-label="交付镜头" value={shot?.id ?? ''} onChange={(event) => useStore.getState().selectShot(event.target.value)}>{scene?.shots.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+            </div>
+            {scene && shot ? <WhiteModelWorkspace scene={scene} shot={shot} /> : <p>请先在“导演包”生成预演镜头。</p>}
+          </div>
         </div>
-        <div className="panel right"><Inspector /></div>
-      </div>
+      ) : (
+        <div className="main">
+          <div className="panel"><ProjectRail />{mode === 'stage' && <Library />}</div>
+          <div className="center-column"><div className="viewport-wrap"><Viewport /></div>{mode === 'shoot' && <Timeline />}</div>
+          <div className="panel right"><Inspector /></div>
+        </div>
+      )}
       <Toasts />
       {settingsOpen && (
         <div className="settings-backdrop" onClick={() => setSettingsOpen(false)}>
@@ -180,7 +200,7 @@ export function App(): JSX.Element {
             <div className="settings-body">
               <section className="settings-section"><h3>{doc.name}{dirty ? ' · 未保存' : ''}</h3><div className="settings-actions"><button className="btn primary" onClick={() => void openProject()}>打开项目</button><button className="btn" onClick={() => void createProject()}>新建项目</button><button className="btn" onClick={() => void openDemo()}>载入示例</button></div></section>
               <section className="settings-section"><h3>界面与帮助</h3><div className="settings-actions"><button className="btn" onClick={() => setLocale(locale === 'zh-CN' ? 'en-US' : 'zh-CN')}>{locale === 'zh-CN' ? 'Switch to English' : '切换到中文'}</button><button className="btn" onClick={() => { setSettingsOpen(false); useStore.getState().setHelpOpen(true) }}>使用说明</button></div></section>
-              <section className="settings-section settings-about"><h3>关于</h3><p>搭景、调度镜头，并生成 Three.js 或 Blender 白模预演视频。</p><p>基于 Sam Wasserman 的 Blockout；源代码采用 Apache-2.0，参见 LICENSE、NOTICE 与 MODIFICATIONS.md。</p></section>
+              <section className="settings-section settings-about"><h3>关于</h3><p>外部 Agent 导演包 → 镜头审阅 → 搭景与拍摄 → Three.js 或 Blender 白模视频。</p><p>基于 Sam Wasserman 的 Blockout；源代码采用 Apache-2.0，参见 LICENSE、NOTICE 与 MODIFICATIONS.md。</p></section>
             </div>
           </section>
         </div>
