@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Previs IR 1.0",
+  "type": "object",
+  "required": ["spec", "version", "assets", "shots"],
+  "properties": {
+    "spec": { "const": "previs-ir" },
+    "version": { "const": "1.0" },
+    "project": { "type": "object" },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "enum": ["character", "prop", "furniture", "vehicle", "animal"] },
+          "semanticType": { "type": "string" },
+          "assetId": { "type": "string" },
+          "aliases": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "semanticType": { "type": "string" },
+          "assetId": { "type": "string" }
+        }
+      }
+    },
+    "shots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "entities"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "sourceText": { "type": "string" },
+          "locationId": { "type": "string" },
+          "duration": { "type": "number" },
+          "aspect": { "enum": ["16:9", "9:16", "2.39:1", "4:3", "1:1"] },
+          "entities": { "type": "array" },
+          "actions": { "type": "array" },
+          "spatialRelations": { "type": "array" },
+          "camera": {
+            "type": "object",
+            "properties": {
+              "shotSize": { "type": "string" },
+              "movement": { "type": "string" },
+              "subjects": { "type": "array", "items": { "type": "string" } },
+              "focalLength": { "type": "number" },
+              "startTime": { "type": "number" },
+              "endTime": { "type": "number" },
+              "distanceMeters": { "type": "number" },
+              "heightDeltaMeters": { "type": "number" },
+              "verticalMovement": { "type": "string" },
+              "startPosition": { "$ref": "#/$defs/v3" },
+              "endPosition": { "$ref": "#/$defs/v3" },
+              "aimAt": { "$ref": "#/$defs/v3" },
+              "startAimAt": { "$ref": "#/$defs/v3" },
+              "endAimAt": { "$ref": "#/$defs/v3" }
+            }
+          },
+          "lighting": { "type": "object" }
+        }
+      }
+    },
+    "unresolved": { "type": "array" }
+  },
+  "$defs": {
+    "v3": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+out/
+dist/
+release/
+exports/
+output/
+tmp/
+*.log
+.DS_Store
+test-results/
+playwright-report/
+coverage/
+*.local
+__pycache__/
+*.pyc
+.env*
+DO_NOT_PUBLISH.md

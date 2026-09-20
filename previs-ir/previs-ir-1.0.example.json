@@ -1,0 +1,42 @@
+{
+  "spec": "previs-ir",
+  "version": "1.0",
+  "project": { "name": "示例项目", "aspect": "16:9", "fps": 24 },
+  "assets": [
+    { "id": "hero", "name": "林夏", "type": "character", "semanticType": "woman" },
+    { "id": "old-tree", "name": "老槐树", "type": "prop", "semanticType": "tree" }
+  ],
+  "locations": [
+    { "id": "courtyard", "name": "院落", "semanticType": "courtyard" }
+  ],
+  "shots": [
+    {
+      "id": "shot-001",
+      "name": "第1镜",
+      "sourceText": "林夏从画面左侧走向右侧，右后方是一棵老槐树，中景缓慢推近，8秒。",
+      "locationId": "courtyard",
+      "duration": 8,
+      "aspect": "16:9",
+      "entities": [
+        { "refId": "hero", "placement": { "screen": "left", "depth": "midground" } },
+        { "refId": "old-tree", "placement": { "screen": "right", "depth": "background" }, "scale": 2.2 }
+      ],
+      "actions": [
+        {
+          "actorId": "hero",
+          "type": "move",
+          "startTime": 0,
+          "endTime": 5,
+          "from": { "screen": "left", "depth": "midground" },
+          "to": { "screen": "right", "depth": "midground" }
+        }
+      ],
+      "spatialRelations": [
+        { "subjectId": "old-tree", "relation": "right_of", "objectId": "hero" }
+      ],
+      "camera": { "shotSize": "medium", "movement": "dolly_in", "subjects": ["hero", "old-tree"] },
+      "lighting": { "preset": "day", "keyDirection": "screen_right_back" }
+    }
+  ],
+  "unresolved": []
+}

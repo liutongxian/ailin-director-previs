@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://director-desk.local/schemas/asset-requirement-ir-1.0.json",
+  "title": "Asset Requirement IR 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec", "version", "project", "assets", "unresolved"],
+  "properties": {
+    "spec": { "const": "asset-requirement-ir" },
+    "version": { "const": "1.0" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "source": { "type": "string" }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/unresolved" }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "type", "states"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["character", "scene", "prop"] },
+        "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "importance": { "enum": ["principal", "supporting", "background", "hero", "standard"] },
+        "description": { "type": "string" },
+        "semanticType": { "type": "string" },
+        "firstAppearance": { "$ref": "#/$defs/id" },
+        "appearances": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/state" }
+        },
+        "whiteModelHint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["semanticType"],
+          "properties": {
+            "semanticType": { "type": "string", "minLength": 1 },
+            "approximateHeightMeters": { "type": "number", "exclusiveMinimum": 0, "maximum": 10 }
+          }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "appliesTo", "requiredSlots"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "appliesTo": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "requiredSlots": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/slot" } }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "view", "required"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["identity", "costume", "geometry", "camera_view", "lighting_state", "standard_view", "detail", "scale_reference", "custom"] },
+        "view": { "enum": ["front", "back", "left_profile", "right_profile", "left_three_quarter", "right_three_quarter", "full_body", "top_down", "wide", "detail", "custom"] },
+        "required": { "type": "boolean" },
+        "description": { "type": "string" },
+        "cameraId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "unresolved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "reason"],
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "suggestedDefault": { "type": "string" }
+      }
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    }
+  }
+}

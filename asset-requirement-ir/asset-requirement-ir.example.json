@@ -1,0 +1,50 @@
+{
+  "spec": "asset-requirement-ir",
+  "version": "1.0",
+  "project": {
+    "name": "示例短剧",
+    "source": "完整剧本"
+  },
+  "assets": [
+    {
+      "id": "CHAR-HERO",
+      "name": "主角",
+      "type": "character",
+      "aliases": ["她"],
+      "importance": "principal",
+      "description": "成年女性调查员",
+      "semanticType": "adult woman",
+      "firstAppearance": "E01-S001",
+      "appearances": ["E01-S001", "E01-S002"],
+      "states": [
+        {
+          "id": "CHAR-HERO-NORMAL",
+          "name": "常态",
+          "description": "深色外套，未受伤",
+          "appliesTo": ["E01-S001:E01-S002"],
+          "requiredSlots": [
+            {
+              "id": "identity-front",
+              "label": "正面身份",
+              "type": "identity",
+              "view": "front",
+              "required": true
+            },
+            {
+              "id": "costume-full",
+              "label": "全身服装",
+              "type": "costume",
+              "view": "full_body",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "whiteModelHint": {
+        "semanticType": "adult woman",
+        "approximateHeightMeters": 1.67
+      }
+    }
+  ],
+  "unresolved": []
+}

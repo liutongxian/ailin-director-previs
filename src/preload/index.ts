@@ -1,0 +1,102 @@
+// Modified from Blockout for the open-core Director Desk; see MODIFICATIONS.md.
+/** The renderer receives only the local project, export, and Blender IPC surface. */
+import { contextBridge, ipcRenderer } from 'electron'
+import type { ImportedDirectorPackResult } from '../shared/director-pack'
+import type { BlenderPlan } from '../engine/blender-plan'
+import type { BlenderJobSnapshot } from '../shared/blender-job'
+
+export interface PlatformInfo {
+  platform: 'macos' | 'windows' | 'linux'
+  isMac: boolean
+  primaryModifier: '⌘' | 'Ctrl'
+  alternateModifier: '⌥' | 'Alt'
+  showInFolderLabel: 'Reveal in Finder' | 'Show in Folder'
+}
+
+export interface BlockoutAPI {
+  readonly platform: PlatformInfo
+  newProjectDialog(): Promise<{ folder: string; name: string } | null>
+  createDemoProject(): Promise<{ folder: string; name: string }>
+  openProjectDialog(): Promise<string | null>
+  pickFile(filters: { name: string; extensions: string[] }[]): Promise<string | null>
+  readTextFile(sourcePath: string): Promise<{ name: string; text: string }>
+  importDirectorPack(projectFolder: string, sourcePath: string): Promise<ImportedDirectorPackResult>
+  blenderStart(projectFolder: string, plan: BlenderPlan): Promise<BlenderJobSnapshot>
+  blenderGet(jobId: string): Promise<BlenderJobSnapshot>
+  blenderCancel(jobId: string): Promise<BlenderJobSnapshot>
+  saveProject(folder: string, json: string): Promise<boolean>
+  saveBackup(folder: string, json: string): Promise<boolean>
+  loadProject(folder: string): Promise<{ json: string | null; backupJson: string | null; backupNewer: boolean; folder: string }>
+  importAsset(folder: string, sourcePath: string): Promise<{ relativePath: string; name: string }>
+  importScan(folder: string, sourcePath: string): Promise<{ relativePath: string; name: string }>
+  importReference(folder: string, sourcePath: string): Promise<{ relativePath: string; name: string }>
+  readProjectFile(folder: string, relativePath: string): Promise<ArrayBuffer>
+  showFolder(path: string): Promise<void>
+  exportBegin(jobId: string, outPath: string, opts: { fps: number; width: number; height: number; framesExpected: number }): Promise<boolean>
+  exportFrame(jobId: string, frame: ArrayBuffer): Promise<boolean>
+  exportEnd(jobId: string): Promise<boolean>
+  exportCancel(jobId: string): Promise<boolean>
+  exportWriteFile(path: string, data: ArrayBuffer | string): Promise<boolean>
+  exportConcat(outPath: string, inputPaths: string[]): Promise<{ ok: boolean; error?: string }>
+  onExportClosed(cb: (jobId: string, code: number, log: string) => void): () => void
+  presetsList(): Promise<{ id: string; name: string; savedAt: string; entityCount: number }[]>
+  presetSave(name: string, json: string): Promise<{ ok: boolean; id?: string; error?: string }>
+  presetLoad(id: string): Promise<string | null>
+  presetDelete(id: string): Promise<boolean>
+  onControlInvoke(cb: (id: string, action: string, params: unknown) => void): () => void
+  controlResult(id: string, result: { ok: boolean; data?: unknown; error?: string }): void
+  versions(): Promise<{ app: string; electron: string; node: string; platform: NodeJS.Platform; productName: string }>
+}
+
+const platform: PlatformInfo = {
+  platform: process.platform === 'darwin' ? 'macos' : process.platform === 'win32' ? 'windows' : 'linux',
+  isMac: process.platform === 'darwin',
+  primaryModifier: process.platform === 'darwin' ? '⌘' : 'Ctrl',
+  alternateModifier: process.platform === 'darwin' ? '⌥' : 'Alt',
+  showInFolderLabel: process.platform === 'darwin' ? 'Reveal in Finder' : 'Show in Folder'
+}
+
+const api: BlockoutAPI = {
+  platform,
+  newProjectDialog: () => ipcRenderer.invoke('dialog:newProject'),
+  createDemoProject: () => ipcRenderer.invoke('project:createDemo'),
+  openProjectDialog: () => ipcRenderer.invoke('dialog:openProject'),
+  pickFile: (filters) => ipcRenderer.invoke('dialog:pickFile', filters),
+  readTextFile: (sourcePath) => ipcRenderer.invoke('file:readText', sourcePath),
+  importDirectorPack: (projectFolder, sourcePath) => ipcRenderer.invoke('directorPack:import', projectFolder, sourcePath),
+  blenderStart: (projectFolder, plan) => ipcRenderer.invoke('blender:start', projectFolder, plan),
+  blenderGet: (jobId) => ipcRenderer.invoke('blender:get', jobId),
+  blenderCancel: (jobId) => ipcRenderer.invoke('blender:cancel', jobId),
+  saveProject: (folder, json) => ipcRenderer.invoke('project:save', folder, json),
+  saveBackup: (folder, json) => ipcRenderer.invoke('project:saveBackup', folder, json),
+  loadProject: (folder) => ipcRenderer.invoke('project:load', folder),
+  importAsset: (folder, sourcePath) => ipcRenderer.invoke('project:importAsset', folder, sourcePath),
+  importScan: (folder, sourcePath) => ipcRenderer.invoke('scan:import', folder, sourcePath),
+  importReference: (folder, sourcePath) => ipcRenderer.invoke('project:importReference', folder, sourcePath),
+  readProjectFile: (folder, relativePath) => ipcRenderer.invoke('file:readAbsolute', folder, relativePath),
+  showFolder: (path) => ipcRenderer.invoke('shell:showFolder', path),
+  exportBegin: (jobId, outPath, opts) => ipcRenderer.invoke('export:begin', jobId, outPath, opts),
+  exportFrame: (jobId, frame) => ipcRenderer.invoke('export:frame', jobId, frame),
+  exportEnd: (jobId) => ipcRenderer.invoke('export:end', jobId),
+  exportCancel: (jobId) => ipcRenderer.invoke('export:cancel', jobId),
+  exportWriteFile: (path, data) => ipcRenderer.invoke('export:writeFile', path, data),
+  exportConcat: (outPath, inputPaths) => ipcRenderer.invoke('export:concat', outPath, inputPaths),
+  onExportClosed: (cb) => {
+    const listener = (_event: unknown, jobId: string, code: number, log: string): void => cb(jobId, code, log)
+    ipcRenderer.on('export:closed', listener)
+    return () => ipcRenderer.removeListener('export:closed', listener)
+  },
+  presetsList: () => ipcRenderer.invoke('presets:list'),
+  presetSave: (name, json) => ipcRenderer.invoke('presets:save', name, json),
+  presetLoad: (id) => ipcRenderer.invoke('presets:load', id),
+  presetDelete: (id) => ipcRenderer.invoke('presets:delete', id),
+  onControlInvoke: (cb) => {
+    const listener = (_event: unknown, id: string, action: string, params: unknown): void => cb(id, action, params)
+    ipcRenderer.on('control:invoke', listener)
+    return () => ipcRenderer.removeListener('control:invoke', listener)
+  },
+  controlResult: (id, result) => ipcRenderer.send('control:result', id, result),
+  versions: () => ipcRenderer.invoke('app:versions')
+}
+
+contextBridge.exposeInMainWorld('blockout', api)

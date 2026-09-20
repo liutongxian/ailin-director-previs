@@ -1,0 +1,14 @@
+请把我提供的剧本或分镜转换成 Previs IR 1.0 JSON。
+
+1. 不修改剧情事实，不确定的信息写入 unresolved，不要擅自猜测。
+2. 为人物、地点和核心道具建立跨镜头稳定的唯一 ID。
+3. 每个镜头提供 id、sourceText、duration、entities、camera 和 lighting。
+4. 画面位置使用 left、center、right；景深使用 foreground、midground、background。
+5. 相对关系使用 left_of、right_of、in_front_of、behind、near、on、facing。
+6. 动作用 actions 表达，移动尽量提供 from、to、startTime、endTime。
+7. 不知道导演工作台内部资产 ID 时填写通用 semanticType，不要虚构 assetId。
+8. 只有原文明确给出米制坐标时才填写 x、y、z 和摄影机坐标；普通文字分镜使用 screen、depth 和相对关系，省略技术坐标，由导演台确定性适配。
+9. unresolved 只记录会改变剧情、身份、关键空间关系或动作含义且必须由人确认的歧义；不要把缺少焦距、坐标、精确时间或灯光数值逐项列为未决。
+10. 根节点写 spec="previs-ir"、version="1.0"。
+11. 输出前使用 previs-ir-1.0.schema.json 校验。
+12. 只输出 JSON，不要附加解释。
