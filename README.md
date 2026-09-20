@@ -2,6 +2,22 @@
 
 把外部 Agent 做好的导演包导入桌面导演台，核对镜头卡，一键生成可编辑 3D 预演，再用本机 Blender 与 FFmpeg 输出供生视频模型参考的白模 MP4。也支持直接导入 Previs IR 或在本地识别分镜文字。项目基于 Sam Wasserman 的 [Blockout](https://github.com/wassermanproductions/blockout) 改造；来源与修改见 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md)。
 
+![开源核心主界面：导演包审阅与可编辑 3D 预演](media/showcase/director-ui.png)
+
+上图为 v0.2.0 开源核心实际界面，导入仓库示例导演包并生成预演后截取。[查看搭景界面](media/showcase/stage-ui.png)。
+
+## 白模效果展示
+
+点击预览图可看同步对比视频；也可分别打开两种引擎的原始白模 MP4。
+
+| 通用镜头 | 同步对比视频 | 单独白模视频 |
+| --- | --- | --- |
+| 咖啡馆会面 · 7 秒 | [![咖啡馆 Three.js 与 Blender 白模对比](media/showcase/cafe-compare.png)](media/showcase/cafe-compare.mp4) | [Three.js](media/showcase/cafe-threejs.mp4) · [Blender](media/showcase/cafe-blender.mp4) |
+| 仓库对峙 · 8 秒 | [![仓库 Three.js 与 Blender 白模对比](media/showcase/warehouse-compare.png)](media/showcase/warehouse-compare.mp4) | [Three.js](media/showcase/warehouse-threejs.mp4) · [Blender](media/showcase/warehouse-blender.mp4) |
+| 街角追逐 · 6 秒 | [![街角 Three.js 与 Blender 白模对比](media/showcase/street-compare.png)](media/showcase/street-compare.mp4) | [Three.js](media/showcase/street-threejs.mp4) · [Blender](media/showcase/street-blender.mp4) |
+
+这些是三组通用案例的既有白模样片，不是随附“双人调度”入门包的输出，也不包含最终生视频模型成片。开源核心使用同一类 Three.js／Blender 白模渲染流程；可按下文教程用自己的导演包生成新视频。
+
 ## 下载与启动
 
 Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.0-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
