@@ -20,7 +20,7 @@
 
 ## 下载与启动
 
-Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.0-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
+Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.1-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
 
 也可以下载源码，在 Windows PowerShell 中启动完整 UI：
 
@@ -73,5 +73,7 @@ npm run package:win
 ```
 
 `npm run smoke` 在 Electron 中真实跑两条 Blender/FFmpeg 链路，其中一条从示例导演包导入开始。构建后的便携 EXE 位于 `release-open-core/`；构建者仍需自行配置 Blender 和 FFmpeg。外部 Agent 也可使用 [本地 MCP/CLI](mcp/README.md)；格式定义见 [Previs IR](previs-ir/README.md)。
+
+公开文件、发布附件及运行路径的核验范围与局限见 [公开内容与可用性核验](docs/公开内容与可用性核验-2026-09-21.md)。
 
 源码按 [Apache License 2.0](LICENSE) 发布；重新分发时保留原项目 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md) 和适用的 [第三方说明](THIRD_PARTY_NOTICES.md)。

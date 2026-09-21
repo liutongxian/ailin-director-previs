@@ -103,7 +103,7 @@ export const BUILTIN_PROFILES: GeneratorProfile[] = [
     fps: 24,
     refModes: ['depthVideo', 'referenceVideo', 'firstFrame'],
     attachHint:
-      'Use the depth-pass MP4 as a depth/structure conditioning video (ComfyUI workflow included in the export).',
+      'Use the depth-pass MP4 as a depth/structure conditioning video in a separately configured workflow.',
     adherenceClause:
       'Adhere to the depth-video structure: camera trajectory, subject silhouettes, and motion timing must match the conditioning video.'
   },
@@ -119,7 +119,7 @@ export const BUILTIN_PROFILES: GeneratorProfile[] = [
     fps: 16,
     refModes: ['depthVideo', 'referenceVideo', 'firstFrame'],
     attachHint:
-      'Use the depth or reference video as VACE/control input in ComfyUI (workflow included in the export).',
+      'Use the depth or reference video as VACE/control input in a separately configured workflow.',
     adherenceClause:
       'Match the control video: identical camera path, subject blocking, and motion timing.'
   },

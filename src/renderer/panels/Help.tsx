@@ -30,40 +30,40 @@ interface Card {
 
 const CARDS: Card[] = [
   {
-    emoji: '🏗',
-    title: 'Stage your set',
-    body: 'Drop an environment and people from the Library, then click the floor to place them.',
-    then: 'then: label your leads and set the light.'
+    emoji: '📋',
+    title: 'Import a director package',
+    body: 'In DIRECTOR, copy the full prompt for an external agent, then import its .ailinpack or .ailin.json file.',
+    then: 'then: review the shot cards and start/middle/end summaries.'
   },
   {
     emoji: '🎬',
-    title: 'One-click sequences',
-    body: 'Whole dance numbers, fights, and chases, already choreographed. Click the floor to place the cast.',
-    then: 'then: every performer stays editable on their own.'
+    title: 'Build editable previs',
+    body: 'Use the one-click build button to create scenes and shots from the reviewed package.',
+    then: 'then: each shot remains editable.'
+  },
+  {
+    emoji: '🏗',
+    title: 'Stage your set',
+    body: 'In STAGE, adjust the imported people, props, environment, and lighting.',
+    then: 'then: check the cast positions and labels.'
   },
   {
     emoji: '🚶',
-    title: 'Make them move',
-    body: 'Select someone, press M and click marks. Or hit ● Record to puppeteer them with your cursor.',
-    then: 'then: retime the pills on the timeline.'
+    title: 'Check the motion',
+    body: 'In SHOOT, review character paths and camera marks on the timeline; play the shot.',
+    then: 'then: adjust timing or camera framing if needed.'
   },
   {
-    emoji: '✨',
-    title: 'Animate tab',
-    body: 'Fights, dances, and sit / drink / jump moves for any character. One click lays them down.',
-    then: 'then: tweak the pose marks like any other.'
-  },
-  {
-    emoji: '🎥',
-    title: 'Frame & move the camera',
-    body: 'Pick a framing, choose from 39 camera moves, or Track a subject so the aim locks on.',
-    then: 'then: ▶ Play shot to see the exact export frame.'
+    emoji: '⚙️',
+    title: 'Prepare local tools',
+    body: 'Install FFmpeg for Three.js export; install Blender and FFmpeg for advanced Blender export.',
+    then: 'then: make both tools available on PATH or configure their executable paths.'
   },
   {
     emoji: '📦',
-    title: 'Deliver',
-    body: 'In Deliver, generate the current previs, review it, then approve it as a video reference.',
-    then: 'then: choose a cloud provider or your configured local ComfyUI.'
+    title: 'Render a white-model MP4',
+    body: 'In DELIVER, select a scene and shot, choose Three.js or Blender, and generate the current white-model video.',
+    then: 'then: play the result and open its output folder; repeat for other shots.'
   }
 ]
 
@@ -406,49 +406,48 @@ const TASKS: { area: string; items: Task[] }[] = [
     area: 'Deliver',
     items: [
       {
-        q: 'How do I export the package for my generator?',
+        q: 'How do I import an external agent’s director package?',
         a: (
           <>
-            In <b>DELIVER</b>, click <b>生成当前白模预演</b>, play the result, then approve it.
-            The approved video becomes a selectable cloud reference. Local H3 prepares its
-            reference package when you submit a shot to your configured ComfyUI.
+            In <b>DIRECTOR</b>, copy the full director-package prompt and give it with your script
+            to an external agent. Import the resulting <b>.ailinpack</b> or <b>.ailin.json</b>,
+            review the shot cards, then build all editable 3D previs scenes.
           </>
         )
       },
       {
-        q: 'What frame rate does the previs reference use?',
+        q: 'How do I generate a white-model reference video?',
         a: (
           <>
-            The current cloud previs button creates a <b>24fps</b> reference.
-            Cloud model resolution controls the generated result, not the local reference file.
+            In <b>DELIVER</b>, select a scene and shot, choose <b>Three.js</b> or <b>Blender</b>,
+            then generate the current white-model MP4. Preview it and open its output folder.
           </>
         )
       },
       {
-        q: 'How do I export first and last frame guides?',
+        q: 'What do I need to install for video export?',
         a: (
           <>
-            Open <b>本地 H3 / ComfyUI</b>, choose <b>FL2VA</b> and export the first/last-frame
-            composition guides. There is no separate arbitrary-frame export button in this release.
+            <b>Three.js</b> export needs local FFmpeg. <b>Blender</b> export needs local Blender
+            and FFmpeg. Put the tools on PATH or set their executable paths before launching the app.
           </>
         )
       },
       {
-        q: 'How do I control whether labels show in the export?',
+        q: 'What does Blender export include?',
         a: (
           <>
-            Current reference export buttons use clean output without editor labels. The advanced
-            export API has additional options; these are not exposed as a label selector here.
+            The shot output folder contains an H.264 MP4, an editable <b>.blend</b> file,
+            inspection images, and a render log.
           </>
         )
       },
       {
-        q: 'How do I stitch all my shots into one video?',
+        q: 'How do I render multiple shots?',
         a: (
           <>
-            Under <b>本地 H3 / ComfyUI</b>, refresh the completed shot results, then click
-            <b>拼接生成的长视频</b>. Set overlap frames between shots first. Animatic and contact-sheet
-            helpers have no standalone button in this release.
+            Select each scene and shot in <b>DELIVER</b> and generate its white-model MP4.
+            This open-core release exports one shot at a time; it does not stitch a long video.
           </>
         )
       },
@@ -456,8 +455,8 @@ const TASKS: { area: string; items: Task[] }[] = [
         q: 'How do I take the blocking into Blender?',
         a: (
           <>
-            Use the Blender blockout section in <b>DIRECTOR</b> to render the current editable shot,
-            then open its output folder for the <b>.blend</b> and MP4. Local Blender is required.
+            In <b>DELIVER</b>, choose <b>Blender</b> and generate the selected shot.
+            Open its output folder for the editable <b>.blend</b> and MP4.
           </>
         )
       }
@@ -498,7 +497,7 @@ const TASKS: { area: string; items: Task[] }[] = [
         a: (
           <>
             Register <b>mcp/blockout-mcp.mjs</b> with Claude Code, Codex, or Hermes — the agent can
-            stage scenes, frame shots, and screenshot the viewport. See AGENTS.md.
+            stage scenes, frame shots, and screenshot the viewport. See mcp/README.md.
           </>
         )
       }
@@ -539,7 +538,7 @@ const COACH_STEPS: CoachStep[] = [
   { key: 'mark2', label: 'Drop a second mark', hint: 'Click again further along — they walk between marks.' },
   { key: 'play', label: 'Press Space to watch it walk', hint: 'Space plays the shot; the path ribbon shows the route.' },
   { key: 'record', label: 'Try ⏺ Record to puppeteer', hint: 'Record camera or performance from the Take bar.' },
-  { key: 'export', label: 'Open DELIVER to export', hint: 'Switch to Deliver for the reference package.' }
+  { key: 'export', label: 'Open DELIVER to export', hint: 'Switch to Deliver to render a white-model MP4.' }
 ]
 
 const COACH_STEPS_ZH: CoachStep[] = [
@@ -548,7 +547,7 @@ const COACH_STEPS_ZH: CoachStep[] = [
   { key: 'mark2', label: '放下第二个走位点', hint: '继续点击下一个位置；对象会在两点间移动。' },
   { key: 'play', label: '按空格预览走位', hint: '播放镜头后，路径带会显示完整路线。' },
   { key: 'record', label: '尝试“录制”直接操控', hint: '从拍摄控制条录制摄影机或人物表演。' },
-  { key: 'export', label: '打开“交付”导出', hint: '切换到交付页，生成视频模型参考包。' }
+  { key: 'export', label: '打开“白模交付”导出', hint: '切换到白模交付页，生成当前镜头的白模 MP4。' }
 ]
 
 /**
@@ -646,51 +645,52 @@ type Tab = 'quickstart' | 'tasks' | 'shortcuts'
 
 const CARDS_ZH: Card[] = [
   {
-    emoji: '🏗',
-    title: '1. 搭建场景',
-    body: '从左侧资产库选择人物、场景或道具，再点击地面放置。选中后拖动彩色箭头调整位置。',
-    then: '接着：给主角命名，并设定基础灯光。'
-  },
-  {
-    emoji: '🚶',
-    title: '2. 安排人物走位',
-    body: '选择人物，按 M 后依次点击地面添加走位点。所有轨迹都会保留在镜头和时间线上。',
-    then: '接着：按空格播放，拖动时间点调整节奏。'
-  },
-  {
-    emoji: '🎥',
-    title: '3. 设计摄影机运动',
-    body: '选择摄影机，添加机位关键点，或直接使用推、拉、摇、移、环绕等运镜预设。',
-    then: '接着：打开“轨迹”，同时检查人物和摄影机路线。'
+    emoji: '📋',
+    title: '1. 导入导演包',
+    body: '在“导演包”复制完整提示词，连同自己的剧本交给外部 Agent；导入返回的 .ailinpack 或 .ailin.json。',
+    then: '接着：核对镜头卡、时长与首／中／尾摘要。'
   },
   {
     emoji: '🎬',
-    title: '4. 使用多机位监看',
-    body: '右下角可查看 A／B／C 等机位的真实取景范围；点击“＋”增加摄影机并切换角度。',
-    then: '每台摄影机的镜头、位置和运动都会独立保存。'
+    title: '2. 一键生成可编辑预演',
+    body: '确认镜头卡后，点击“一键生成全部可编辑 3D 预演”，得到可继续修改的场景和镜头。',
+    then: '接着：检查生成的站位和摄影机。'
   },
   {
-    emoji: '💡',
-    title: '5. 设定灯光方向',
-    body: '在右侧选择日景、黄金时刻、夜景等预设，再调整主光方向和高度。',
-    then: '灯光信息会一并写入交付提示词。'
+    emoji: '🏗',
+    title: '3. 搭景调整',
+    body: '在“搭景”调整人物、道具、场景和灯光。选择人物后可修改名称、位置与姿态。',
+    then: '接着：检查人物之间的相对位置。'
+  },
+  {
+    emoji: '🎥',
+    title: '4. 拍摄检查',
+    body: '在“拍摄”检查人物走位、摄影机轨迹和时间线，播放镜头并按需调整。',
+    then: '接着：确认镜头画幅和运动节奏。'
+  },
+  {
+    emoji: '⚙️',
+    title: '5. 准备本机工具',
+    body: 'Three.js 快速白模需要 FFmpeg；Blender 高级白模需要 Blender 和 FFmpeg。',
+    then: '让工具位于 PATH，或在启动前指定其可执行文件路径。'
   },
   {
     emoji: '📦',
-    title: '6. 交付给 ComfyUI',
-    body: '在交付页生成当前白模预演，播放检查并批准后，选择云端模型或已配置的本地ComfyUI。',
-    then: '人物、场景和道具资产绑定会随镜头一起交付。'
+    title: '6. 生成白模 MP4',
+    body: '在“白模交付”选择场景和镜头，选择 Three.js 或 Blender，生成当前镜头的白模视频。',
+    then: '播放检查并打开输出位置；其他镜头逐个生成。'
   }
 ]
 
 const TASKS_ZH = [
+  ['怎样使用外部 Agent 的导演包？', '在“导演包”复制完整提示词，连同自己的剧本交给外部 Agent；导入返回的 .ailinpack 或 .ailin.json，检查镜头卡与首／中／尾摘要，再点击“一键生成全部可编辑 3D 预演”。'],
   ['怎样让人物移动？', '选择人物，按 M，再按运动顺序点击地面。每次点击都会生成可编辑的走位点。'],
   ['怎样制作双机位或多机位？', '进入拍摄页，选择摄影机后点击“＋”。A、B、C 机位会保留各自的镜头参数和运动轨迹。'],
   ['怎样让摄影机始终跟着人物？', '在摄影机属性的“跟踪主体”中选择人物。此后无论摄影机怎样移动，镜头都会持续对准该人物。'],
   ['怎样检查摄影机实际拍到什么？', '点击“通过摄影机查看”，并在右下角的镜头监看中切换机位；画面边框就是实际导出范围。'],
-  ['怎样避免人物、场景和道具漂移？', '在资产对照中把每个白模对象绑定到正式参考资产；交付时按镜头带出相同资产 ID 和参考图。'],
-  ['怎样交给 ComfyUI？', '进入“交付→本地 H3 / ComfyUI”，配置并测试连接、锁定所需图片，再提交当前镜头。导演台准备参考文件并回收生成结果；本机须先安装对应节点和模型。'],
-  ['怎样拼接成长视频？', '先按镜头分别生成，锁定通过的镜头版本，再按镜头表顺序拼接。镜头首尾帧和资产 ID 用于维持连续性。']
+  ['怎样生成白模视频？', '进入“白模交付”，选场景和镜头，选 Three.js 快速白模或 Blender 高级白模，点击生成。播放检查后用“打开输出位置”取得 MP4。'],
+  ['需要安装哪些软件？', 'Three.js 快速白模需要本机 FFmpeg；Blender 高级白模需要本机 Blender 和 FFmpeg。把它们加入 PATH，或在启动前指定绝对路径。'],
+  ['怎样处理多镜头？', '逐个选择场景和镜头并生成白模 MP4。本开源核心目前没有自动拼接长视频的按钮。']
 ] as const
 
 const SHORTCUTS_ZH: [string, string][] = [
@@ -749,7 +749,7 @@ export function HelpOverlay(): JSX.Element | null {
           <div className="help-body help-v4-body">
             {tab === 'quickstart' && (
               <div className="help-v4-inner">
-                <p className="help-intro">整个流程只有三步：<b>搭建</b>场景、<b>拍摄</b>走位和运镜、<b>交付</b>参考包给 ComfyUI。</p>
+                <p className="help-intro">从外部 Agent 导演包开始：<b>导入并审阅</b> → <b>一键生成可编辑预演</b> → <b>搭景与拍摄检查</b> → <b>逐镜头导出白模 MP4</b>。</p>
                 <div className="help-cards">
                   {CARDS_ZH.map((card) => (
                     <div key={card.title} className="help-card">
@@ -830,9 +830,9 @@ export function HelpOverlay(): JSX.Element | null {
           {tab === 'quickstart' && (
             <div className="help-v4-inner">
               <p className="help-intro">
-                The whole app is three verbs: <b>STAGE</b> the scene, <b>SHOOT</b> the motion,{' '}
-                <b>DELIVER</b> the reference package to your AI generator. Here&apos;s the whole
-                thing at a glance.
+                Start with an external agent&apos;s director package: <b>import and review</b>,{' '}
+                <b>build editable previs</b>, <b>check STAGE and SHOOT</b>, then{' '}
+                <b>render a white-model MP4</b> for each shot.
               </p>
               <div className="help-cards">
                 {CARDS.map((c) => (
