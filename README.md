@@ -20,7 +20,7 @@
 
 ## 下载与启动
 
-Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.1-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
+Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.2-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
 
 也可以下载源码，在 Windows PowerShell 中启动完整 UI：
 

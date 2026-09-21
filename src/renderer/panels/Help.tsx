@@ -152,15 +152,6 @@ const TASKS: { area: string; items: Task[] }[] = [
         )
       },
       {
-        q: 'How do I stage a scene from a photo?',
-        a: (
-          <>
-            <b>Populate from reference…</b> at the bottom of the Library stages people, poses,
-            lighting, and a matching camera from an image. Needs a Claude API key; one <Kbd>{`${MOD}Z`}</Kbd> undoes it all.
-          </>
-        )
-      },
-      {
         q: 'How do I bring in my own 3D model?',
         a: (
           <>
