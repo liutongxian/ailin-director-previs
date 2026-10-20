@@ -20,6 +20,9 @@ test('opens the real packaged UI and generates a Blender video', async () => {
   })
   try {
     const page = await app.firstWindow()
+    await expect(page.getByRole('main', { name: '导演台首页' })).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByRole('main', { name: '导演台首页' }).getByRole('button')).toHaveCount(2)
+    await page.getByRole('button', { name: '导演包一键生成白模预演', exact: false }).click()
     await expect(page.getByRole('button', { name: 'DIRECTOR', exact: true })).toBeVisible({ timeout: 30_000 })
     await page.getByRole('button', { name: '导入艾琳导演包…' }).click()
     await expect(page.locator('.director-shot-card')).toHaveCount(1)

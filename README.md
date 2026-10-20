@@ -1,10 +1,12 @@
 # 艾琳导演台 · 开源核心
 
-把外部 Agent 做好的导演包导入桌面导演台，核对镜头卡，一键生成可编辑 3D 预演，再用本机 Blender 与 FFmpeg 输出供生视频模型参考的白模 MP4。也支持直接导入 Previs IR 或在本地识别分镜文字。项目基于 Sam Wasserman 的 [Blockout](https://github.com/wassermanproductions/blockout) 改造；来源与修改见 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md)。
+首页只保留两个入口：**导演包一键生成白模预演**、**手动搭建白模预演**。导入外部 Agent 的导演包，或自行摆放人物、道具和摄影机；完成检查后，用本机 Three.js／Blender 与 FFmpeg 导出白模 MP4。
 
-![开源核心主界面：导演包审阅与可编辑 3D 预演](media/showcase/director-ui.png)
+项目基于 Sam Wasserman 的 [Blockout](https://github.com/wassermanproductions/blockout) 改造；来源与修改见 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md)。
 
-上图为 v0.2.0 开源核心实际界面，导入仓库示例导演包并生成预演后截取。[查看搭景界面](media/showcase/stage-ui.png)。
+![v0.2.3 首页：两种白模预演入口](media/showcase/home-ui.png)
+
+进入后再显示对应工作区，可随时返回首页，当前项目保持原样。[查看导演包工作区](media/showcase/director-ui.png) · [查看搭景界面](media/showcase/stage-ui.png)。
 
 ## 白模效果展示
 
@@ -20,7 +22,7 @@
 
 ## 下载与启动
 
-Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.2-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
+Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.3-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
 
 也可以下载源码，在 Windows PowerShell 中启动完整 UI：
 
@@ -43,7 +45,7 @@ npm run dev
 
 ## 第一次跑通：导演包到白模视频
 
-1. 打开“导演包”，点击“复制导演包完整提示词”，把它和自己的剧本／分镜交给外部 Agent。提示词包含规则、JSON Schema 和完整示例。带素材时交付 `.ailinpack`（ZIP，根目录含 `director.ailin.json` 和对应 `assetBindings`）；纯文本时交付 UTF-8 `.ailin.json`。
+1. 在首页选择“导演包一键生成白模预演”，点击“复制导演包完整提示词”，把它和自己的剧本／分镜交给外部 Agent。提示词包含规则、JSON Schema 和完整示例。带素材时交付 `.ailinpack`（ZIP，根目录含 `director.ailin.json` 和对应 `assetBindings`）；纯文本时交付 UTF-8 `.ailin.json`。
 2. 点击“导入艾琳导演包…”，选取 Agent 的文件。先看校验结果、每镜头时长、人物与机位，以及首／中／尾摘要。首次体验可直接导入仓库的 [双人调度示例](examples/双人调度.ailin.json)。
 3. 点击“一键生成全部可编辑 3D 预演”。若提示替换示例场景，确认后进入“搭景”。在“搭景”调整人物、道具、场景，在“拍摄”检查摄影机和时间线。
 4. 打开“白模交付”，选择场景和镜头，选择“高级白模 Blender”，点击“生成当前Blender高级白模”。完成后播放检查，也可设为最终交付参考。多镜头项目逐镜头选择并生成。
@@ -51,11 +53,15 @@ npm run dev
 
 逐屏说明、外部 Agent 提示词用法、文件结构、常见报错与验收方法见 [从导演包到白模视频](docs/从导演包到白模视频.md)。
 
+## 手动搭建白模预演
+
+在首页选择“手动搭建白模预演”，进入“搭景”摆放人物与道具，再到“拍摄”调整走位、动作和摄影机，最后从“白模交付”导出 MP4。可继续当前项目；需要空白场景时，在“项目与说明”中新建项目。打开已有项目、保存和示例也在工作区内提供。
+
 ## 界面与边界
 
 | 页面 | 用途 |
 | --- | --- |
-| 导演包 | 导入 `.ailinpack`／`.ailin.json`，校验镜头卡与首中尾，或导入 Previs IR、TXT／MD 分镜 |
+| 导演包 | 导入 `.ailinpack`／`.ailin.json`，核对镜头卡与首中尾，一键生成可编辑预演 |
 | 搭景 | 修改每镜头的可编辑 3D 场景、人物、道具、位置和轨迹 |
 | 拍摄 | 检查机位、摄影机运动、时间线及镜头时长 |
 | 白模交付 | 按镜头运行 Three.js 或 Blender 白模，播放、打开输出目录并选定参考版本 |
@@ -74,6 +80,6 @@ npm run package:win
 
 `npm run smoke` 在 Electron 中真实跑两条 Blender/FFmpeg 链路，其中一条从示例导演包导入开始。构建后的便携 EXE 位于 `release-open-core/`；构建者仍需自行配置 Blender 和 FFmpeg。外部 Agent 也可使用 [本地 MCP/CLI](mcp/README.md)；格式定义见 [Previs IR](previs-ir/README.md)。
 
-公开文件、发布附件及运行路径的核验范围与局限见 [公开内容与可用性核验](docs/公开内容与可用性核验-2026-09-21.md)。
+本次改版与验证见 [v0.2.3 发布记录](docs/开源版简化首页-2026-10-20.md)；历史公开内容核验见 [v0.2.2 记录](docs/公开内容与可用性核验-2026-09-21.md)。
 
 源码按 [Apache License 2.0](LICENSE) 发布；重新分发时保留原项目 [NOTICE](NOTICE)、[MODIFICATIONS.md](MODIFICATIONS.md) 和适用的 [第三方说明](THIRD_PARTY_NOTICES.md)。

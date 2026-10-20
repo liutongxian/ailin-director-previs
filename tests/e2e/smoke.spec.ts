@@ -15,6 +15,9 @@ test('generates a Blender white-model video from editable staging', async () => 
   try {
     const page = await app.firstWindow()
     await page.waitForLoadState('domcontentloaded')
+    await expect(page.getByRole('main', { name: '导演台首页' })).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByRole('main', { name: '导演台首页' }).getByRole('button')).toHaveCount(2)
+    await page.getByRole('button', { name: '手动搭建白模预演', exact: false }).click()
     await expect(page.getByRole('button', { name: 'STAGE', exact: true })).toBeVisible({ timeout: 30_000 })
     await expect(page.getByRole('button', { name: 'SHOOT', exact: true })).toBeVisible()
     await page.evaluate(() => {

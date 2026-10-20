@@ -19,3 +19,12 @@ Blender and FFmpeg; no Blender or FFmpeg binaries are included.
 The complete implementation history is not included because this is an
 independent public source snapshot. See the upstream Blockout project and
 `NOTICE` for the original author credit.
+
+## 2026-10-20 · v0.2.3
+
+The home screen now offers only two starting paths: director-package previs
+and manual staging. Editing, camera and export tools appear inside the
+workspace. The director-package workspace no longer exposes the separate
+TXT/MD recognition and Previs IR import controls. Existing projects, source
+formats and local export engines remain compatible. Commercial source,
+activation and distribution packages are unchanged and excluded.

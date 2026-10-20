@@ -1,6 +1,6 @@
 {
   "name": "ailin-director-previs",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "艾琳导演台开源核心：可编辑搭景、镜头调度及 Three.js / Blender 白模预演视频。",
   "main": "out/main/index.js",
   "author": "Tongxian",

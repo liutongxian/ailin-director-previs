@@ -30,6 +30,7 @@ export function App(): JSX.Element {
   const shot = useStore((state) => state.shot())
   const toast = useStore((state) => state.toast)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [homeOpen, setHomeOpen] = useState(true)
   const started = useRef(false)
 
   const save = useCallback(async (): Promise<void> => {
@@ -102,6 +103,7 @@ export function App(): JSX.Element {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
+      if (homeOpen) return
       const state = useStore.getState()
       if (!state.doc) return
       const focused = document.activeElement
@@ -140,7 +142,7 @@ export function App(): JSX.Element {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [save])
+  }, [homeOpen, save])
 
   if (!doc) return (
     <div className={`app ${PLATFORM_CLASS}`}>
@@ -156,7 +158,9 @@ export function App(): JSX.Element {
     <div className={`app ${PLATFORM_CLASS}`}>
       <div className="titlebar">
         <span className="app-name">艾琳导演台 · 开源核心</span>
-        <span style={{ color: 'var(--text-faint)', fontSize: 12 }}>{doc.name}{dirty ? ' •' : ''}</span>
+        {!homeOpen && <button className="btn small" onClick={() => { useStore.getState().setPlaying(false); setHomeOpen(true) }}>返回首页</button>}
+        {!homeOpen && <>
+        <span className="project-title">{doc.name}{dirty ? ' •' : ''}</span>
         <div className="mode-switch">
           <button aria-label="DIRECTOR" className={mode === 'director' ? 'active' : ''} onClick={() => setMode('director')}>导演包</button>
           <button aria-label="STAGE" className={mode === 'stage' ? 'active' : ''} onClick={() => setMode('stage')}>{t('mode.stage')}</button>
@@ -166,10 +170,27 @@ export function App(): JSX.Element {
         <button className="btn small" aria-label="Save" onClick={() => void save()}>{t('common.save')}</button>
         <button className="btn small" onClick={() => setSettingsOpen(true)}>项目与说明</button>
         <button className="btn small" onClick={() => useStore.getState().setHelpOpen(true)}>{t('common.help')}</button>
+        </>}
       </div>
-      {mode === 'director' ? (
+      {homeOpen ? (
+        <main className="previs-home" aria-label="导演台首页">
+          <div className="previs-home-content">
+            <h1>开始白模预演</h1>
+            <p>选择一种方式开始。</p>
+            <div className="previs-home-actions">
+              <button className="previs-home-choice" onClick={() => { setMode('director'); setHomeOpen(false) }}>
+                <strong>导演包一键生成白模预演</strong>
+                <span>导入导演包，核对镜头，一键生成可编辑预演。</span>
+              </button>
+              <button className="previs-home-choice" onClick={() => { setMode('stage'); setHomeOpen(false) }}>
+                <strong>手动搭建白模预演</strong>
+                <span>摆放人物与道具，调整走位、动作和摄影机。</span>
+              </button>
+            </div>
+          </div>
+        </main>
+      ) : mode === 'director' ? (
         <div className="director-layout">
-          <div className="panel director-rail"><ProjectRail /></div>
           <DirectorCorePanel />
           <div className="director-preview"><Viewport /><span className="director-preview-label">当前可编辑 3D 场景</span></div>
         </div>
@@ -206,7 +227,7 @@ export function App(): JSX.Element {
         </div>
       )}
       <HelpOverlay />
-      <BlockingCoach />
+      {!homeOpen && <BlockingCoach />}
     </div>
   )
 }
