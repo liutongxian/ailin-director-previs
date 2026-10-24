@@ -19,7 +19,7 @@
 
 气泡指向实际控件，不拦截操作区；关键步骤在真实操作成功后才允许继续，也可以跳过本步。缩放窗口、滚动或切换页面时会重新定位。引导仅记忆本机进度；载入示例前检查未保存修改，拒绝切换时保留原工程。Blender 和 FFmpeg 仍需自行配置。
 
-详情与验收范围见 [0.2.4 新手气泡引导](docs/新手气泡引导-2026-10-24.md)。此前发布的 0.2.3 EXE 不包含新增引导；0.2.4 可从当前源码构建，下载页是否已有此版请以实际发布列表为准。
+详情与验收范围见 [0.2.4 新手气泡引导](docs/新手气泡引导-2026-10-24.md)。此前发布的 0.2.3 EXE 不包含新增引导，请从 [v0.2.4 发布页](https://github.com/liutongxian/ailin-director-previs/releases/tag/v0.2.4) 下载新版，或从当前源码构建。
 
 ## 白模效果展示
 
@@ -35,7 +35,7 @@
 
 ## 下载与启动
 
-Windows 用户可从 [Releases](https://github.com/liutongxian/ailin-director-previs/releases) 下载 `AilinDirectorPrevis-0.2.3-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
+Windows 用户可从 [v0.2.4 Releases](https://github.com/liutongxian/ailin-director-previs/releases/tag/v0.2.4) 下载 `AilinDirectorPrevis-0.2.4-win-x64.exe`。这是免安装版，双击运行。当前未提供代码签名，Windows SmartScreen 可能提示；请核对发布页的 SHA-256 后自行决定是否运行。EXE 不包含 Blender 或 FFmpeg。
 
 也可以下载源码，在 Windows PowerShell 中启动完整 UI：
 
