@@ -1,5 +1,7 @@
 # Modifications to Blockout
 
+- 2026-10-24: Add optional contextual bubble tours for the built-in sample, external-Agent director packages, real white-model video export, and manual staging/camera work. Bundle the existing generic JSON sample in the renderer; preserve dirty projects before opening a separate practice project; track real completion, dismissal and local resume state; reposition bubbles on scroll/resize. Give every new demo a unique folder, keep asset placement when a guide stays on the same page, explain encoder failures, and allow launcher-specific profile/project paths without touching older installations. No commercial licensing, cloud generation, private projects, or new runtime dependencies are introduced.
+
 This repository is a derivative of Sam Wasserman's Blockout, licensed under
 Apache-2.0. The original copyright and attribution remain in `LICENSE` and
 `NOTICE`.

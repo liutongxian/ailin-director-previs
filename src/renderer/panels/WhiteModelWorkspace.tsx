@@ -6,6 +6,7 @@ import type { BlenderJobSnapshot } from '../../shared/blender-job'
 import { exportShot } from '../export/exporter'
 import { compileEditableBlenderPlan } from '../export/blender-plan'
 import { useStore } from '../store'
+import { emit } from '../bus'
 
 function useProjectVideo(folder: string | null, relativePath?: string): { url: string | null; invalid: boolean } {
   const [url, setUrl] = useState<string | null>(null)
@@ -85,6 +86,11 @@ export function WhiteModelWorkspace({ scene, shot }: { scene: Scene; shot: Shot 
   const approved = shot.previsExports?.find((record) => record.id === shot.approvedPrevisId)
 
   useEffect(() => {
+    emit('guideRendering', { running: threeRunning || ['queued', 'running'].includes(blenderJob?.status ?? '') })
+    return () => emit('guideRendering', { running: false })
+  }, [threeRunning, blenderJob?.status])
+
+  useEffect(() => {
     if (!blenderJob || !['queued', 'running'].includes(blenderJob.status)) return
     let live = true
     const timer = window.setInterval(() => {
@@ -119,6 +125,7 @@ export function WhiteModelWorkspace({ scene, shot }: { scene: Scene; shot: Shot 
       })
     })
     toast('Blender高级白模已生成，可在右侧播放并选择为最终交付参考。', 'success')
+    emit('guideAction', { kind: 'video-exported' })
   }, [blenderJob?.id, blenderJob?.status, blenderPlanVideo, doc, scene.id, shot.id])
 
   const chooseEngine = (next: WhiteModelEngine): void => {
@@ -127,6 +134,12 @@ export function WhiteModelWorkspace({ scene, shot }: { scene: Scene; shot: Shot 
     const target = [...(targetScene?.shots ?? []), ...(targetScene?.drafts ?? [])].find((item) => item.id === shot.id)
     if (target) target.whiteModelEngine = next
     })
+  }
+
+  const reportThreeFailure = (message: string): void => {
+    toast(message.includes('no export job')
+      ? '白模编码器未能启动或提前退出。请检查 FFmpeg 的安装与配置后再试。'
+      : message, 'error')
   }
 
   const generateThree = async (): Promise<void> => {
@@ -138,7 +151,7 @@ export function WhiteModelWorkspace({ scene, shot }: { scene: Scene; shot: Shot 
         labels: 'off', resolution: 'auto', fpsOverride: 24
       })
       if (!result.ok || !result.referenceVideo) {
-        toast(result.error ?? 'Three.js快速白模生成失败。', 'error')
+        reportThreeFailure(result.error ?? 'Three.js快速白模生成失败。')
         return
       }
       mutate('register Three.js white model', (project) => {
@@ -147,6 +160,9 @@ export function WhiteModelWorkspace({ scene, shot }: { scene: Scene; shot: Shot 
         if (target) registerPrevisExport(target, { id: newId('previs'), createdAt: new Date().toISOString(), engine: 'threejs', ...result.referenceVideo! })
       })
       toast('Three.js快速白模已生成，可在右侧播放检查。', 'success')
+      emit('guideAction', { kind: 'video-exported' })
+    } catch (error) {
+      reportThreeFailure(error instanceof Error ? error.message : '快速白模生成失败，请检查 FFmpeg 配置。')
     } finally {
       setThreeRunning(false)
     }

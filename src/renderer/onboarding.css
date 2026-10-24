@@ -1,0 +1,30 @@
+.previs-guide-layer { position: fixed; inset: 0; z-index: 10000; pointer-events: none; }
+.previs-guide-spotlight { position: fixed; border: 2px solid #cf820d; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(18, 26, 34, .12); pointer-events: none; }
+.previs-guide-bubble { position: fixed; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 24px); pointer-events: auto; color: #2a2a26; background: #fffdf8; border: 1px solid #d49b41; border-radius: 12px; box-shadow: 0 8px 32px #18212c30; font-size: 13px; line-height: 1.7; }
+.previs-guide-bubble::before { content: ''; position: absolute; width: 10px; height: 10px; background: #fffdf8; border: 1px solid #d49b41; transform: rotate(45deg); pointer-events: none; }
+.previs-guide-bubble[data-side='left']::before { left: -6px; top: 22px; border-right: 0; border-top: 0; }
+.previs-guide-bubble[data-side='right']::before { right: -6px; top: 22px; border-left: 0; border-bottom: 0; }
+.previs-guide-bubble[data-side='top']::before { top: -6px; left: 24px; border-right: 0; border-bottom: 0; }
+.previs-guide-bubble[data-side='bottom']::before { bottom: -6px; left: 24px; border-top: 0; border-left: 0; }
+.previs-guide-bubble[data-side='none']::before { display: none; }
+.previs-guide-bubble header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; color: #8d5406; font-size: 12px; font-weight: 600; border-bottom: 1px solid #ece3d3; }
+.previs-guide-bubble header button { width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #635741; font-size: 22px; cursor: pointer; }
+.previs-guide-body { padding: 14px 16px 16px; max-height: calc(100vh - 80px); overflow: auto; }
+.previs-guide-body h2 { margin: 0 0 10px; font-size: 18px; line-height: 1.45; color: #342c20; }
+.previs-guide-body p { margin: 0 0 12px; }
+.previs-guide-body .btn { white-space: normal; }
+.previs-guide-routes { display: grid; gap: 8px; margin: 14px 0; }
+.previs-guide-routes > button { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border: 1px solid #e5dccb; border-radius: 7px; background: #fff; color: #34312b; cursor: pointer; }
+.previs-guide-routes > button:hover { border-color: #cf820d; background: #fff7e8; }
+.previs-guide-routes b { font-size: 13px; }
+.previs-guide-routes span { color: #756f65; font-size: 11px; }
+.previs-guide-hint { padding: 9px 11px; background: #f4eee2; border-radius: 6px; font-size: 12px; overflow-wrap: anywhere; }
+.previs-guide-status { font-size: 12px; color: #81550e; }
+.previs-guide-navigation { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.previs-guide-secondary { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.previs-guide-secondary button { font: inherit; font-size: 12px; border: 0; color: #776a54; background: transparent; text-decoration: underline; cursor: pointer; }
+.previs-guide-notice { padding: 8px 10px; color: #376341; background: #f0f8ef; border-radius: 6px; }
+.guide-resume { width: 100%; margin: 0 0 10px; }
+.previs-guide-bubble button:focus-visible { outline: 2px solid #bd6b00; outline-offset: 2px; }
+.previs-guide-bubble button:disabled { opacity: .5; cursor: default; }
+[data-guide='launcher'] { margin-left: auto; }

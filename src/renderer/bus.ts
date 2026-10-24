@@ -8,6 +8,9 @@ import type { ShotSizeId } from '@engine/types'
 export type FramingKind = '2S' | 'OTS' | 'REV' | 'TOP' | 'LOW' | 'DUTCH'
 
 export interface BusEvents {
+  /** Report successful user actions to the optional, non-destructive UI guide. */
+  guideAction: { kind: 'sample-loaded' | 'package-imported' | 'prompt-copied' | 'previs-built' | 'video-exported' | 'project-saved' | 'project-created' }
+  guideRendering: { running: boolean }
   /** Reframe the shot camera to a shot size on the selected subject. */
   frameSubject: { size: ShotSizeId }
   /** One-click cinematography framings (two-shot, over-the-shoulder, …). */

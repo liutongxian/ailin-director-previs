@@ -8,6 +8,7 @@
 import { app, BrowserWindow, dialog, ipcMain as electronIpcMain, Menu, nativeImage, shell, type IpcMainInvokeEvent } from 'electron'
 import { spawn, type ChildProcess } from 'child_process'
 import { mkdir, readFile, writeFile, copyFile, stat, rm } from 'fs/promises'
+import { randomUUID } from 'crypto'
 import { join, dirname, basename, extname, resolve, sep } from 'path'
 import { registerPresetsIpc } from './presets'
 import { startControlServer } from './control'
@@ -33,6 +34,12 @@ const isDev = !!process.env.ELECTRON_RENDERER_URL
 // therefore opened the user's most recent project inside the test.
 if (process.env.BLOCKOUT_SMOKE_DIR) {
   app.setPath('userData', join(process.env.BLOCKOUT_SMOKE_DIR, 'user-data'))
+}
+
+// Optional launcher paths let a new Windows build use a dedicated D-drive
+// profile without touching a still-open older version or its project history.
+if (!process.env.BLOCKOUT_SMOKE_DIR && process.env.BLOCKOUT_USER_DATA_DIR?.trim()) {
+  app.setPath('userData', resolve(process.env.BLOCKOUT_USER_DATA_DIR))
 }
 
 // Remote desktops and a small set of Windows GPU/driver combinations can
@@ -116,7 +123,7 @@ ipcMain.handle('dialog:newProject', async () => {
     title: '新建艾琳导演台项目',
     buttonLabel: '创建',
     nameFieldLabel: '项目名称',
-    defaultPath: join(app.getPath('documents'), '未命名导演项目.blockout')
+    defaultPath: join(process.env.BLOCKOUT_PROJECTS_DIR?.trim() || app.getPath('documents'), '未命名导演项目.blockout')
   })
   if (result.canceled || !result.filePath) return null
   const withoutExtension = result.filePath.replace(/\.blockout$/i, '')
@@ -177,10 +184,11 @@ ipcMain.handle('blender:cancel', async (_e, jobId: string) => cancelBlenderJob(j
 ipcMain.handle('project:createDemo', async () => {
   const parent = process.env.BLOCKOUT_SMOKE_DIR
     ? process.env.BLOCKOUT_SMOKE_DIR
-    : join(app.getPath('documents'), '导演预演项目')
+    : process.env.BLOCKOUT_PROJECTS_DIR?.trim() || join(app.getPath('documents'), '导演预演项目')
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
   const name = '导演预演示例'
-  const folder = join(parent, `${name}-${stamp}.blockout`)
+  // Two rapid opens must never reuse a folder and overwrite the previous demo.
+  const folder = join(parent, `${name}-${stamp}-${randomUUID()}.blockout`)
   for (const child of ['assets', 'exports', 'generated', 'workflows']) {
     await mkdir(join(folder, child), { recursive: true })
   }

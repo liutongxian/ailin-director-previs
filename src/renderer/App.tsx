@@ -11,6 +11,9 @@ import { Timeline } from './panels/Timeline'
 import { Toasts } from './panels/Toasts'
 import { HelpOverlay, BlockingCoach } from './panels/Help'
 import { useI18n } from './i18n'
+import { emit } from './bus'
+import { OnboardingTour } from './panels/OnboardingTour'
+import type { GuideView } from './onboarding'
 
 const LAST_PROJECT_KEY = 'director.lastProjectFolder'
 const PLATFORM_CLASS = `platform-${window.blockout.platform.platform}`
@@ -31,6 +34,7 @@ export function App(): JSX.Element {
   const toast = useStore((state) => state.toast)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [homeOpen, setHomeOpen] = useState(true)
+  const [guideRequest, setGuideRequest] = useState(0)
   const started = useRef(false)
 
   const save = useCallback(async (): Promise<void> => {
@@ -39,6 +43,7 @@ export function App(): JSX.Element {
     if (!json || !currentFolder) return
     await window.blockout.saveProject(currentFolder, json)
     if (currentProjectJson() === json) markSaved()
+    emit('guideAction', { kind: 'project-saved' })
   }, [markSaved])
 
   const restore = useCallback(async (projectFolder: string): Promise<boolean> => {
@@ -50,11 +55,13 @@ export function App(): JSX.Element {
     return true
   }, [loadFromJson, toast])
 
-  const openDemo = useCallback(async (): Promise<void> => {
+  const openDemo = useCallback(async (): Promise<boolean> => {
+    if (useStore.getState().dirty && !window.confirm('当前项目还有未保存修改。请先保存；仍要切换到独立示例项目吗？')) return false
     const project = await window.blockout.createDemoProject()
     newDemoProject(project.folder, project.name)
     await save()
     window.localStorage.setItem(LAST_PROJECT_KEY, project.folder)
+    return true
   }, [newDemoProject, save])
 
   const openProject = useCallback(async (): Promise<void> => {
@@ -73,7 +80,18 @@ export function App(): JSX.Element {
     await save()
     window.localStorage.setItem(LAST_PROJECT_KEY, selected.folder)
     setSettingsOpen(false)
+    emit('guideAction', { kind: 'project-created' })
   }, [dirty, newProject, save])
+
+  const guideNavigate = useCallback((view: GuideView): void => {
+    useStore.getState().setHelpOpen(false)
+    useStore.getState().setCoachOpen(false)
+    setHomeOpen(false)
+    setSettingsOpen(view === 'settings')
+    const destination = view === 'settings' ? 'stage' : view
+    // Staying on the same page must preserve the asset the learner just picked.
+    if (useStore.getState().mode !== destination) setMode(destination)
+  }, [setMode])
 
   useEffect(() => {
     if (started.current) return
@@ -167,10 +185,11 @@ export function App(): JSX.Element {
           <button aria-label="SHOOT" className={mode === 'shoot' ? 'active' : ''} onClick={() => setMode('shoot')}>{t('mode.shoot')}</button>
           <button aria-label="DELIVER" className={mode === 'deliver' ? 'active' : ''} onClick={() => setMode('deliver')}>白模交付</button>
         </div>
-        <button className="btn small" aria-label="Save" onClick={() => void save()}>{t('common.save')}</button>
+        <button className="btn small" aria-label="Save" data-guide="save" onClick={() => void save()}>{t('common.save')}</button>
         <button className="btn small" onClick={() => setSettingsOpen(true)}>项目与说明</button>
         <button className="btn small" onClick={() => useStore.getState().setHelpOpen(true)}>{t('common.help')}</button>
         </>}
+        <button className="btn small" data-guide="launcher" onClick={() => { setSettingsOpen(false); useStore.getState().setHelpOpen(false); useStore.getState().setCoachOpen(false); setGuideRequest((value) => value + 1) }}>新手引导</button>
       </div>
       {homeOpen ? (
         <main className="previs-home" aria-label="导演台首页">
@@ -208,9 +227,9 @@ export function App(): JSX.Element {
         </div>
       ) : (
         <div className="main">
-          <div className="panel"><ProjectRail />{mode === 'stage' && <Library />}</div>
+          <div className="panel"><ProjectRail />{mode === 'stage' && <div data-guide="library"><Library /></div>}</div>
           <div className="center-column"><div className="viewport-wrap"><Viewport /></div>{mode === 'shoot' && <Timeline />}</div>
-          <div className="panel right"><Inspector /></div>
+          <div className="panel right" data-guide="inspector"><Inspector /></div>
         </div>
       )}
       <Toasts />
@@ -219,7 +238,7 @@ export function App(): JSX.Element {
           <section className="settings-modal" role="dialog" aria-modal="true" aria-label="项目与说明" onClick={(event) => event.stopPropagation()}>
             <header className="settings-header"><div><span>AILIN DIRECTOR PREVIS</span><h2>项目与说明</h2></div><button className="btn small" onClick={() => setSettingsOpen(false)}>完成</button></header>
             <div className="settings-body">
-              <section className="settings-section"><h3>{doc.name}{dirty ? ' · 未保存' : ''}</h3><div className="settings-actions"><button className="btn primary" onClick={() => void openProject()}>打开项目</button><button className="btn" onClick={() => void createProject()}>新建项目</button><button className="btn" onClick={() => void openDemo()}>载入示例</button></div></section>
+              <section className="settings-section"><h3>{doc.name}{dirty ? ' · 未保存' : ''}</h3><div className="settings-actions"><button className="btn primary" onClick={() => void openProject()}>打开项目</button><button className="btn" data-guide="new-project" onClick={() => void createProject()}>新建项目</button><button className="btn" onClick={() => void openDemo()}>载入示例</button></div></section>
               <section className="settings-section"><h3>界面与帮助</h3><div className="settings-actions"><button className="btn" onClick={() => setLocale(locale === 'zh-CN' ? 'en-US' : 'zh-CN')}>{locale === 'zh-CN' ? 'Switch to English' : '切换到中文'}</button><button className="btn" onClick={() => { setSettingsOpen(false); useStore.getState().setHelpOpen(true) }}>使用说明</button></div></section>
               <section className="settings-section settings-about"><h3>关于</h3><p>外部 Agent 导演包 → 镜头审阅 → 搭景与拍摄 → Three.js 或 Blender 白模视频。</p><p>基于 Sam Wasserman 的 Blockout；源代码采用 Apache-2.0，参见 LICENSE、NOTICE 与 MODIFICATIONS.md。</p></section>
             </div>
@@ -228,6 +247,7 @@ export function App(): JSX.Element {
       )}
       <HelpOverlay />
       {!homeOpen && <BlockingCoach />}
+      <OnboardingTour request={guideRequest} homeOpen={homeOpen} navigate={guideNavigate} openSampleProject={openDemo} />
     </div>
   )
 }

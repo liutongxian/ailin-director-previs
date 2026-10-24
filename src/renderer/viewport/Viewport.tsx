@@ -108,6 +108,7 @@ function ShotSizeRow(): JSX.Element {
           key={size}
           className="btn small"
           title={`Auto-frame: ${SHOT_SIZES[size].name}`}
+          data-guide={size === 'MS' ? 'frame-subject' : undefined}
           onClick={() => emit('frameSubject', { size })}
         >
           {size}
@@ -420,6 +421,7 @@ export function Viewport(): JSX.Element {
               <button
                 className="btn small primary"
                 aria-label="▶ Play shot"
+                data-guide="play"
                 onClick={() => {
                   const s = useStore.getState()
                   s.setLookThrough(true)
@@ -441,6 +443,7 @@ export function Viewport(): JSX.Element {
               <button
                 className="btn small"
                 aria-label="+ Cam mark"
+                data-guide="camera-mark"
                 onClick={() => {
                   setSelection({ kind: 'camera' })
                   emit('dropCameraMarkAtView', {})
@@ -452,6 +455,7 @@ export function Viewport(): JSX.Element {
               <button
                 className={`btn small ${droppingMarks ? 'active' : ''}`}
                 aria-label="+ Marks"
+                data-guide="actor-mark"
                 onClick={() => setDroppingMarks(!droppingMarks)}
                 disabled={!selection}
                 title="Drop marks for the selection by clicking the floor (M)"
