@@ -1,9 +1,13 @@
 // Modified from Blockout for the open-core Director Desk; see MODIFICATIONS.md.
-/** The renderer receives only the local project, export, and Blender IPC surface. */
+/** The renderer receives a typed project, production, export, and Blender IPC surface. */
 import { contextBridge, ipcRenderer } from 'electron'
 import type { ImportedDirectorPackResult } from '../shared/director-pack'
 import type { BlenderPlan } from '../engine/blender-plan'
 import type { BlenderJobSnapshot } from '../shared/blender-job'
+
+import type { ProductionAttempt, ProductionMedia } from '../engine/production'
+import type { AssetCreationJob } from '../engine/production-assets'
+import type { CloudVideoProviderId } from '../engine/cloud-video'
 
 export interface PlatformInfo {
   platform: 'macos' | 'windows' | 'linux'
@@ -14,6 +18,34 @@ export interface PlatformInfo {
 }
 
 export interface BlockoutAPI {
+  createProductionProject(): Promise<{ folder: string; name: string }>
+  pickFiles(filters: { name: string; extensions: string[] }[]): Promise<string[]>
+  cloudVideoKeyStatus(provider: CloudVideoProviderId): Promise<{ available: boolean; environmentVariable: string }>
+  directorCredentialStatus(): Promise<{ saved: boolean; secure: boolean }>
+  directorCredentialSave(apiKey: string): Promise<{ ok: true } | { ok: false; error: string }>
+  directorCredentialClear(): Promise<{ ok: true } | { ok: false; error: string }>
+  cancelScriptModel(requestId: string): Promise<{ cancelled: boolean }>
+  analyzeScriptWithModel(
+    config: { baseUrl: string; model: string; apiKey?: string },
+    sourceText: string,
+    images?: {
+      assetId: string
+      assetName: string
+      kind: 'character' | 'scene' | 'prop'
+      mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+      base64: string
+    }[],
+    requestId?: string
+  ): Promise<{ ok: true; text: string } | { ok: false; error: string }>
+  importProductionMedia(folder: string, sourcePath: string): Promise<ProductionMedia>
+  productionAssetJobs(folder: string, projectId: string): Promise<AssetCreationJob[]>
+  productionDismissAsset(folder: string, id: string): Promise<void>
+  productionGenerateAsset(folder: string, projectId: string, id: string, apiKey?: string, input?: import('../engine/production-assets').AssetCreationDraft): Promise<AssetCreationJob>
+  productionLocalQwenStatus(baseUrl: string, password?: string): Promise<{ ready: boolean; message: string }>
+  productionExportFilm(folder: string, projectId: string): Promise<{ path: string; subtitlePath: string; duration: number; createdAt: string }>
+  productionAttempts(folder: string, projectId: string): Promise<ProductionAttempt[]>
+  productionSubmit(folder: string, projectId: string, shotId: string, id: string, apiKey?: string): Promise<ProductionAttempt>
+  productionUpdate(folder: string, id: string, action: 'query' | 'download' | 'recover' | 'dismiss', apiKey?: string, taskId?: string): Promise<ProductionAttempt>
   readonly platform: PlatformInfo
   newProjectDialog(): Promise<{ folder: string; name: string } | null>
   createDemoProject(): Promise<{ folder: string; name: string }>
@@ -57,6 +89,23 @@ const platform: PlatformInfo = {
 }
 
 const api: BlockoutAPI = {
+  createProductionProject: () => ipcRenderer.invoke('project:createProduction'),
+  pickFiles: (filters) => ipcRenderer.invoke('dialog:pickFiles', filters),
+  cloudVideoKeyStatus: (provider) => ipcRenderer.invoke('cloudVideo:keyStatus', provider),
+  directorCredentialStatus: () => ipcRenderer.invoke('directorCredential:status'),
+  directorCredentialSave: (apiKey) => ipcRenderer.invoke('directorCredential:save', apiKey),
+  directorCredentialClear: () => ipcRenderer.invoke('directorCredential:clear'),
+  cancelScriptModel: (requestId) => ipcRenderer.invoke('ai:cancelScript', requestId),
+  analyzeScriptWithModel: (config, sourceText, images, requestId) => ipcRenderer.invoke('ai:analyzeScript', config, sourceText, images, requestId),
+  importProductionMedia: (folder, path) => ipcRenderer.invoke('production:importMedia', folder, path),
+  productionAssetJobs: (folder, projectId) => ipcRenderer.invoke('production:assetJobs', folder, projectId),
+  productionDismissAsset: (folder, id) => ipcRenderer.invoke('production:dismissAsset', folder, id),
+  productionGenerateAsset: (folder, projectId, id, apiKey, input) => ipcRenderer.invoke('production:generateAsset', folder, projectId, id, apiKey, input),
+  productionLocalQwenStatus: (baseUrl, password) => ipcRenderer.invoke('production:localQwenStatus', baseUrl, password),
+  productionExportFilm: (folder, projectId) => ipcRenderer.invoke('production:exportFilm', folder, projectId),
+  productionAttempts: (folder, projectId) => ipcRenderer.invoke('production:list', folder, projectId),
+  productionSubmit: (folder, projectId, shotId, id, apiKey) => ipcRenderer.invoke('production:submit', folder, projectId, shotId, id, apiKey),
+  productionUpdate: (folder, id, action, apiKey, taskId) => ipcRenderer.invoke('production:update', folder, id, action, apiKey, taskId),
   platform,
   newProjectDialog: () => ipcRenderer.invoke('dialog:newProject'),
   createDemoProject: () => ipcRenderer.invoke('project:createDemo'),

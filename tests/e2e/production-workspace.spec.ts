@@ -1,0 +1,125 @@
+import { _electron as electron, expect, test } from '@playwright/test'
+import { mkdtempSync, readFileSync, existsSync, cpSync, mkdirSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+test('production project persists script, shot-specific references, model choices and survives relocation', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'director-fullflow-e2e-'))
+  const image = join(root, '参考图.png')
+  execFileSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'color=c=teal:s=640x360', '-frames:v', '1', image], { windowsHide: true, stdio: 'ignore' })
+  const app = await electron.launch({ args: ['out/main/index.js', '--force-device-scale-factor=2'], env: { ...process.env, BLOCKOUT_SMOKE_DIR: root } })
+  try {
+    const page = await app.firstWindow()
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    await page.getByRole('button', { name: '开始全流程制作', exact: false }).click()
+    await expect(page.getByRole('main', { name: '全流程导演台' })).toBeVisible()
+    await page.getByLabel('完整剧本', { exact: true }).fill('软件功能测试第一段。\n\n软件功能测试第二段。')
+    await page.getByRole('button', { name: '留存一个版本' }).click()
+    await page.getByRole('button', { name: '2 拆分镜', exact: true }).click()
+    await page.getByLabel('分镜内容', { exact: true }).fill('静态色块测试画面。')
+    await page.getByRole('button', { name: '新增镜头', exact: true }).click()
+    await page.getByLabel('镜头名称', { exact: true }).fill('软件测试镜头')
+    await page.getByRole('button', { name: '5 生成视频', exact: true }).click()
+    await page.getByLabel('生成提示词', { exact: true }).fill('静态蓝色色块。')
+    await app.evaluate(({ dialog }, path) => { dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [path] }) }, image)
+    await page.getByRole('button', { name: '导入文件', exact: true }).click()
+    await expect(page.getByLabel('参考图.png的用途')).toBeVisible()
+    await page.getByLabel('参考图.png的用途').selectOption('style')
+    await page.getByLabel('生成模型', { exact: true }).selectOption('volcengine-ark:doubao-seedance-2-5-260628')
+    await expect(page.getByLabel('生成提示词')).toHaveValue('静态蓝色色块。')
+    await expect(page.getByLabel('参考图.png的用途')).toHaveValue('style')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    const folder = await page.evaluate(() => (window as any).__blockout.store.getState().projectFolder as string)
+    await expect.poll(() => JSON.parse(readFileSync(join(folder, 'project.json'), 'utf8')).scenes[0].shots.at(-1).generationInput?.provider).toBe('volcengine-ark')
+    const project = JSON.parse(readFileSync(join(folder, 'project.json'), 'utf8'))
+    expect(project.scriptHistory).toHaveLength(1)
+    expect(project.scenes[0].shots[0].generationInput).toBeUndefined()
+    expect(project.scenes[0].shots.at(-1).generationInput.references[0].purpose).toBe('style')
+    expect(existsSync(join(folder, project.productionMedia[0].path))).toBe(true)
+    expect(existsSync(image)).toBe(true)
+    mkdirSync('media/showcase', { recursive: true })
+    await page.screenshot({ path: 'media/showcase/fullflow-generation.png' })
+    const moved = join(root, 'relocated-project')
+    cpSync(folder, moved, { recursive: true })
+    await page.evaluate(async (target) => {
+      const result = await (window as any).blockout.loadProject(target)
+      const state = (window as any).__blockout.store.getState()
+      if (!state.loadFromJson(target, result.json)) throw new Error('Relocated project failed to reopen')
+      ;(window as any).__blockout.store.getState().setMode('production')
+      const last = state.doc?.scenes[0].shots.at(-1)
+      if (last) (window as any).__blockout.store.getState().selectShot(last.id)
+    }, moved)
+    // select using the visible list after reopening, avoiding old store references.
+    await page.locator('.pf-shot-list').getByRole('button', { name: /软件测试镜头/ }).click()
+    await expect(page.getByLabel('生成提示词')).toHaveValue('静态蓝色色块。')
+    await expect(page.getByAltText('参考图.png')).toBeVisible()
+    await page.getByRole('button', { name: '1 写剧本', exact: true }).click()
+    await expect(page.getByLabel('完整剧本', { exact: true })).toHaveValue('软件功能测试第一段。\n\n软件功能测试第二段。')
+    await page.screenshot({ path: 'media/showcase/fullflow-script.png' })
+    await page.getByRole('button', { name: '3 做素材', exact: true }).click()
+    await page.locator('summary').filter({ hasText: '其他素材与高级管理' }).click()
+    await page.locator('summary').filter({ hasText: '制作新素材' }).click()
+    await page.getByLabel('制作素材名称').fill('测试道具')
+    await page.getByLabel('素材生成描述').fill('软件验收用的蓝色立方体描述，不提交生成。')
+    await expect(page.getByRole('button', { name: '生成一张素材', exact: true })).toBeDisabled()
+    await page.getByLabel('图片模型').selectOption('qwen-image-2.1-local')
+    await page.getByLabel('本地生图服务地址').fill('http://127.0.0.1:18888')
+    await page.getByLabel('本地图片比例').selectOption('576x768')
+    await expect(page.getByLabel('Unsloth 登录密码')).toBeVisible()
+    await expect(page.getByRole('button', { name: '检查本地连接' })).toBeVisible()
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect.poll(() => JSON.parse(readFileSync(join(moved, 'project.json'), 'utf8')).productionAssetDraft?.name).toBe('测试道具')
+    await expect.poll(() => JSON.parse(readFileSync(join(moved, 'project.json'), 'utf8')).productionAssetDraft?.localQwen).toEqual({ baseUrl: 'http://127.0.0.1:18888', width: 576, height: 768, steps: 24 })
+    await page.screenshot({ path: 'media/showcase/fullflow-assets.png' })
+    await page.getByRole('button', { name: '4 看预演', exact: true }).click()
+    await page.waitForTimeout(1000)
+    const layout = await page.evaluate(() => ({ dpr: devicePixelRatio, window: innerWidth, app: document.querySelector('.production-workspace')!.getBoundingClientRect().width, viewport: document.querySelector('.pf-viewport')!.clientWidth, canvas: document.querySelector('.pf-viewport canvas')!.getBoundingClientRect().width }))
+    expect(layout.dpr).toBe(2)
+    expect(layout.app).toBeLessThanOrEqual(layout.window)
+    expect(layout.canvas).toBeCloseTo(layout.viewport, 0)
+    expect(errors).toEqual([])
+  } finally { await app.close() }
+})
+
+test('exports adopted mixed-size and mixed-audio fixture clips with exact trims and subtitle times', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'director-film-e2e-'))
+  const first = join(root, 'first.mp4'), second = join(root, 'second.mp4')
+  execFileSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'color=c=blue:s=640x360:r=24:d=2', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=2', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', first], { windowsHide: true, stdio: 'ignore' })
+  execFileSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'color=c=green:s=360x640:r=24:d=2', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', second], { windowsHide: true, stdio: 'ignore' })
+  const app = await electron.launch({ args: ['out/main/index.js'], env: { ...process.env, BLOCKOUT_SMOKE_DIR: root } })
+  try {
+    const page = await app.firstWindow()
+    await page.getByRole('button', { name: '开始全流程制作', exact: false }).click()
+    const folder = await page.evaluate(() => (window as any).__blockout.store.getState().projectFolder as string)
+    mkdirSync(join(folder, 'generated'), { recursive: true })
+    cpSync(first, join(folder, 'generated/first.mp4')); cpSync(second, join(folder, 'generated/second.mp4'))
+    await page.getByRole('button', { name: '2 拆分镜', exact: true }).click()
+    await page.getByRole('button', { name: '新增镜头', exact: true }).click()
+    await page.evaluate(async () => {
+      const state = (window as any).__blockout.store.getState()
+      state.mutate('technical fixture clips', (doc: any) => {
+        const scene = doc.scenes[0]; scene.shots = scene.shots.slice(0, 2)
+        scene.shots.forEach((shot: any, index: number) => {
+          const input = { provider: 'minimax', model: 'MiniMax-H3', prompt: '技术色块', duration: 4, resolution: '768P', ratio: '16:9', references: [], generateAudio: false }
+          shot.productionAttempts = [{ id: `fixture-${index}`, projectId: doc.id, shotId: shot.id, createdAt: '2026-10-26', updatedAt: '2026-10-26', status: 'complete', snapshot: { input, media: [] }, localPath: `generated/${index === 0 ? 'first' : 'second'}.mp4` }]
+          shot.selectedProductionAttemptId = `fixture-${index}`
+          shot.productionEdit = { trimStart: 0.5, trimEnd: 0.5, caption: `字幕${index + 1}` }
+        })
+        doc.productionExport = { aspect: '16:9' }
+      })
+    })
+    await page.getByRole('button', { name: '6 导出成片', exact: true }).click()
+    await page.getByRole('button', { name: '导出 MP4 与字幕', exact: true }).click()
+    await expect(page.getByRole('heading', { name: '已导出的成片' })).toBeVisible({ timeout: 60000 })
+    const doc = JSON.parse(readFileSync(join(folder, 'project.json'), 'utf8'))
+    const film = doc.productionFilms.at(-1)
+    const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,width,height:format=duration', '-of', 'json', join(folder, film.path)], { encoding: 'utf8', windowsHide: true }))
+    expect(probe.streams.find((stream: any) => stream.codec_type === 'video')).toMatchObject({ width: 1280, height: 720 })
+    expect(probe.streams.some((stream: any) => stream.codec_type === 'audio')).toBe(true)
+    expect(Number(probe.format.duration)).toBeCloseTo(2, 1)
+    expect(readFileSync(join(folder, film.subtitlePath), 'utf8')).toContain('00:00:01,000 --> 00:00:02,000\n字幕2')
+    await page.screenshot({ path: 'media/showcase/fullflow-export.png' })
+  } finally { await app.close() }
+})

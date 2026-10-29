@@ -19,6 +19,9 @@ export interface IRPlacement {
 }
 
 export interface IRAsset {
+  /** Script-grounded visual facts and an editable image-generation draft. */
+  visualDescription?: string
+  imagePrompt?: string
   id: string
   name: string
   type: 'character' | 'prop' | 'furniture' | 'vehicle' | 'animal'
@@ -28,6 +31,8 @@ export interface IRAsset {
 }
 
 export interface IRLocation {
+  visualDescription?: string
+  imagePrompt?: string
   id: string
   name: string
   semanticType?: string
@@ -244,7 +249,8 @@ export const PREVIS_AGENT_INSTRUCTIONS = `请把我提供的剧本或分镜转�
 7. 未知资产可以填写通用 semanticType；不要虚构本软件的 assetId。
 8. 只有输入明确给出米制坐标时才填写人物/道具 x、y、z 和摄影机坐标；普通文字分镜优先使用 screen、depth 和相对关系，省略坐标，由导演台确定性适配。
 9. unresolved 只记录会改变剧情、人物身份、关键空间关系或动作含义且必须由人确认的歧义；不要把缺少焦距、米制坐标、精确时间点、灯光数值等常规技术参数逐项列为未决。
-10. 输出 spec="previs-ir"、version="1.0"，只输出 JSON，不要附加解释。`
+10. 为每个被镜头使用的人物、场景和道具补充 visualDescription（剧本明确的外貌、服装、布局、材质事实）与 imagePrompt（单张资产参考图的中文提示词）。人物图突出身份和服装，场景图展示布局且不带人物，道具图展示造型细节。不要把分镜动作当作人物固定设定；未提供的外貌不写成确定事实，提示使用参考图确认。保持同一资产跨镜头 ID 一致，所有入镜资产须列在 entities 或 locationId 中。
+11. 输出 spec="previs-ir"、version="1.0"，只输出 JSON，不要附加解释。`
 
 const TEMPLATE_OBJECT: PrevisIR = {
   spec: 'previs-ir',
@@ -301,6 +307,7 @@ export const PREVIS_IR_SCHEMA = {
         type: 'object', required: ['id', 'name', 'type'],
         properties: {
           id: { type: 'string' }, name: { type: 'string' },
+          visualDescription: { type: 'string' }, imagePrompt: { type: 'string' },
           type: { enum: ['character', 'prop', 'furniture', 'vehicle', 'animal'] },
           semanticType: { type: 'string' }, assetId: { type: 'string' }, aliases: { type: 'array', items: { type: 'string' } }
         }
@@ -310,7 +317,7 @@ export const PREVIS_IR_SCHEMA = {
       type: 'array',
       items: {
         type: 'object', required: ['id', 'name'],
-        properties: { id: { type: 'string' }, name: { type: 'string' }, semanticType: { type: 'string' }, assetId: { type: 'string' } }
+        properties: { id: { type: 'string' }, name: { type: 'string' }, semanticType: { type: 'string' }, assetId: { type: 'string' }, visualDescription: { type: 'string' }, imagePrompt: { type: 'string' } }
       }
     },
     shots: {
@@ -392,18 +399,29 @@ export function validatePrevisIR(value: unknown): IRValidationResult {
 
   const ids = new Set<string>()
   for (const [index, asset] of ir.assets!.entries()) {
-    if (!asset?.id || !asset.name || !asset.type) errors.push(`assets[${index}] 缺少 id、name 或 type。`)
+    for (const key of ['visualDescription', 'imagePrompt'] as const) if (asset?.[key] !== undefined && typeof asset[key] !== 'string') errors.push(`assets[${index}].${key} 必须是文本。`)
+    if (!asset || typeof asset.id !== 'string' || !asset.id || typeof asset.name !== 'string' || !asset.name || !['character', 'prop', 'furniture', 'vehicle', 'animal'].includes(asset.type)) errors.push(`assets[${index}] 缺少有效的 id、name 或 type。`)
     else if (ids.has(asset.id)) errors.push(`资产ID重复：${asset.id}。`)
     else ids.add(asset.id)
   }
-  const locationIds = new Set((ir.locations ?? []).map((item) => item.id))
+  if (ir.locations !== undefined && !Array.isArray(ir.locations)) return { valid: false, errors: [...errors, 'locations 必须是数组。'], warnings }
+  const locationIds = new Set<string>()
+  for (const location of ir.locations ?? []) {
+    if (!location || typeof location.id !== 'string' || typeof location.name !== 'string') { errors.push('地点缺少 id 或 name。'); continue }
+    if (locationIds.has(location.id)) errors.push(`地点ID重复：${location.id}。`)
+    locationIds.add(location.id)
+    for (const key of ['visualDescription', 'imagePrompt'] as const) if (location[key] !== undefined && typeof location[key] !== 'string') errors.push(`地点 ${location.id} 的 ${key} 必须是文本。`)
+  }
+  const shotIds = new Set<string>()
   const validPlacement = (placement: IRPlacement | undefined, path: string): void => {
     if (!placement) return
     if (placement.screen && !['left', 'center', 'right'].includes(placement.screen)) errors.push(`${path}.screen 只能是 left、center 或 right。`)
     if (placement.depth && !['foreground', 'midground', 'background'].includes(placement.depth)) errors.push(`${path}.depth 只能是 foreground、midground 或 background。`)
   }
   for (const [index, shot] of ir.shots!.entries()) {
-    if (!shot?.id) errors.push(`shots[${index}] 缺少 id。`)
+    if (typeof shot?.id !== 'string' || !shot.id) errors.push(`shots[${index}] 缺少有效的 id。`)
+    else if (shotIds.has(shot.id)) errors.push(`镜头ID重复：${shot.id}。`)
+    else shotIds.add(shot.id)
     if (!Array.isArray(shot?.entities)) errors.push(`镜头 ${shot?.id ?? index} 缺少 entities 数组。`)
     const visibleIds = new Set((shot?.entities ?? []).map((entity) => entity.refId))
     for (const [entityIndex, entity] of (shot?.entities ?? []).entries()) {

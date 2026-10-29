@@ -7,6 +7,7 @@ import { Inspector } from './panels/Inspector'
 import { ProjectRail } from './panels/ProjectRail'
 import { DirectorCorePanel } from './panels/DirectorCorePanel'
 import { WhiteModelWorkspace } from './panels/WhiteModelWorkspace'
+import { ProductionWorkspace } from './panels/ProductionWorkspace'
 import { Timeline } from './panels/Timeline'
 import { Toasts } from './panels/Toasts'
 import { HelpOverlay, BlockingCoach } from './panels/Help'
@@ -99,12 +100,17 @@ export function App(): JSX.Element {
     void (async () => {
       const recent = window.localStorage.getItem(LAST_PROJECT_KEY)
       if (recent) {
-        try { if (await restore(recent)) return } catch { /* fall back to demo */ }
+        try { if (await restore(recent)) return } catch { /* start a blank project */ }
         window.localStorage.removeItem(LAST_PROJECT_KEY)
       }
-      try { await openDemo() } catch (error) { toast(String(error), 'error') }
+      try {
+        const project = await window.blockout.createProductionProject()
+        newProject(project.folder, project.name)
+        await save()
+        window.localStorage.setItem(LAST_PROJECT_KEY, project.folder)
+      } catch (error) { toast(String(error), 'error') }
     })()
-  }, [openDemo, restore, toast])
+  }, [newProject, save, restore, toast])
 
   useEffect(() => {
     document.documentElement.lang = locale
@@ -180,6 +186,7 @@ export function App(): JSX.Element {
         {!homeOpen && <>
         <span className="project-title">{doc.name}{dirty ? ' •' : ''}</span>
         <div className="mode-switch">
+          <button aria-label="PRODUCTION" className={mode === 'production' ? 'active' : ''} onClick={() => setMode('production')}>全流程制作</button>
           <button aria-label="DIRECTOR" className={mode === 'director' ? 'active' : ''} onClick={() => setMode('director')}>导演包</button>
           <button aria-label="STAGE" className={mode === 'stage' ? 'active' : ''} onClick={() => setMode('stage')}>{t('mode.stage')}</button>
           <button aria-label="SHOOT" className={mode === 'shoot' ? 'active' : ''} onClick={() => setMode('shoot')}>{t('mode.shoot')}</button>
@@ -194,9 +201,13 @@ export function App(): JSX.Element {
       {homeOpen ? (
         <main className="previs-home" aria-label="导演台首页">
           <div className="previs-home-content">
-            <h1>开始白模预演</h1>
+            <h1>开始你的故事</h1>
             <p>选择一种方式开始。</p>
             <div className="previs-home-actions">
+              <button className="previs-home-choice" onClick={() => { setMode('production'); setHomeOpen(false) }}>
+                <strong>开始全流程制作</strong>
+                <span>写剧本、拆分镜、做素材、看预演、生成视频与导出成片。</span>
+              </button>
               <button className="previs-home-choice" onClick={() => { setMode('director'); setHomeOpen(false) }}>
                 <strong>导演包一键生成白模预演</strong>
                 <span>导入导演包，核对镜头，一键生成可编辑预演。</span>
@@ -208,6 +219,8 @@ export function App(): JSX.Element {
             </div>
           </div>
         </main>
+      ) : mode === 'production' ? (
+        <ProductionWorkspace />
       ) : mode === 'director' ? (
         <div className="director-layout">
           <DirectorCorePanel />
@@ -240,7 +253,7 @@ export function App(): JSX.Element {
             <div className="settings-body">
               <section className="settings-section"><h3>{doc.name}{dirty ? ' · 未保存' : ''}</h3><div className="settings-actions"><button className="btn primary" onClick={() => void openProject()}>打开项目</button><button className="btn" data-guide="new-project" onClick={() => void createProject()}>新建项目</button><button className="btn" onClick={() => void openDemo()}>载入示例</button></div></section>
               <section className="settings-section"><h3>界面与帮助</h3><div className="settings-actions"><button className="btn" onClick={() => setLocale(locale === 'zh-CN' ? 'en-US' : 'zh-CN')}>{locale === 'zh-CN' ? 'Switch to English' : '切换到中文'}</button><button className="btn" onClick={() => { setSettingsOpen(false); useStore.getState().setHelpOpen(true) }}>使用说明</button></div></section>
-              <section className="settings-section settings-about"><h3>关于</h3><p>外部 Agent 导演包 → 镜头审阅 → 搭景与拍摄 → Three.js 或 Blender 白模视频。</p><p>基于 Sam Wasserman 的 Blockout；源代码采用 Apache-2.0，参见 LICENSE、NOTICE 与 MODIFICATIONS.md。</p></section>
+              <section className="settings-section settings-about"><h3>关于</h3><p>剧本 → 分镜 → 资产与参考素材 → 白模预演 → 云端视频 → 成片。也支持导入外部 Agent 导演包。</p><p>基于 Sam Wasserman 的 Blockout；源代码采用 Apache-2.0，参见 LICENSE、NOTICE 与 MODIFICATIONS.md。</p></section>
             </div>
           </section>
         </div>

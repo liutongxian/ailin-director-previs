@@ -25,7 +25,9 @@ import { generateSequence, choreographMotion } from '@engine/sequences'
 import { buildRoutine } from '@engine/choreography'
 import { ACTION_PRESETS } from '@engine/action-presets'
 
-export type Mode = 'director' | 'assets' | 'stage' | 'shoot' | 'deliver'
+import { assetPlanSource, syncProductionAssetPlan } from '@engine/production-asset-plan'
+
+export type Mode = 'production' | 'director' | 'assets' | 'stage' | 'shoot' | 'deliver'
 
 export type Selection =
   | { kind: 'entity'; entityId: string }
@@ -445,6 +447,7 @@ export const useStore = create<BlockoutState>((set, get) => ({
     }
     const next = structuredClone(doc)
     fn(next)
+    if (next.previsIR && assetPlanSource(doc) !== assetPlanSource(next)) syncProductionAssetPlan(next)
     const now = Date.now()
     const coalesce = label === lastMutateLabel && now - lastMutateAt < COALESCE_MS
     lastMutateLabel = label

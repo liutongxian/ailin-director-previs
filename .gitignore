@@ -16,3 +16,17 @@ __pycache__/
 *.pyc
 .env*
 DO_NOT_PUBLISH.md
+
+# Local provider credentials, profiles, and production projects are private.
+.runtime/
+credentials/
+user-data/
+profiles/
+*.blockout/
+*.pem
+*.key
+*.p12
+*.pfx
+operator-password.txt
+local-qwen-password.txt
+provider-source.env

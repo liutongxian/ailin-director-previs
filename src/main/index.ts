@@ -5,7 +5,7 @@
  * talks through the typed IPC surface in src/preload.
  */
 
-import { app, BrowserWindow, dialog, ipcMain as electronIpcMain, Menu, nativeImage, shell, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain as electronIpcMain, Menu, nativeImage, safeStorage, shell, type IpcMainInvokeEvent } from 'electron'
 import { spawn, type ChildProcess } from 'child_process'
 import { mkdir, readFile, writeFile, copyFile, stat, rm } from 'fs/promises'
 import { randomUUID } from 'crypto'
@@ -25,6 +25,15 @@ import { validateReferenceFile } from './validate-reference'
 import { importDirectorPack } from './director-pack'
 import type { BlenderPlan } from '../engine/blender-plan'
 import { cancelBlenderJob, getBlenderJob, startBlenderJob } from './blender-jobs'
+
+import { getCloudVideoProvider, type CloudVideoProviderId } from '../engine/cloud-video'
+import { clearDirectorCredential, directorCredentialPath, readDirectorCredential, saveDirectorCredential, type CredentialCipher } from './director-credential'
+import { writeAtomic } from './atomic-file'
+import { importProductionMedia, listProductionAttempts, submitProductionAttempt, updateProductionAttempt } from './production-storage'
+import { probeProductionMedia } from './production-probe'
+import { exportProductionFilm } from './production-film'
+import { assetCreationJobs, dismissAssetCreation, generateProductionAsset } from './production-assets'
+import { localQwenStatus } from './local-qwen'
 
 const isDev = !!process.env.ELECTRON_RENDERER_URL
 
@@ -60,6 +69,21 @@ const ipcMain = {
   },
   on: electronIpcMain.on.bind(electronIpcMain)
 }
+
+const directorCredentialCipher: CredentialCipher = {
+  available: () => safeStorage.isEncryptionAvailable(),
+  encrypt: (value) => safeStorage.encryptString(value),
+  decrypt: (value) => safeStorage.decryptString(value)
+}
+const directorModelRequests = new Map<string, AbortController>()
+
+function savedDirectorCredentialPath(): string {
+  const userDataFolder = process.env.BLOCKOUT_SMOKE_DIR
+    ? join(process.env.BLOCKOUT_SMOKE_DIR, 'user-data')
+    : app.getPath('userData')
+  return directorCredentialPath(userDataFolder)
+}
+
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -162,6 +186,12 @@ ipcMain.handle('dialog:pickFile', async (_e, filters: { name: string; extensions
   return result.filePaths[0]
 })
 
+ipcMain.handle('dialog:pickFiles', async (_e, filters: { name: string; extensions: string[] }[]) => {
+  if (!mainWindow) return []
+  const result = await dialog.showOpenDialog(mainWindow, { properties: ['openFile', 'multiSelections'], filters })
+  return result.canceled ? [] : result.filePaths
+})
+
 ipcMain.handle('file:readText', async (_e, sourcePath: string) => {
   if (!isSupportedTextImport(sourcePath)) throw new Error(`仅支持 ${TEXT_IMPORT_LABEL} 文本文件。`)
   const info = await stat(sourcePath)
@@ -181,35 +211,49 @@ ipcMain.handle('blender:get', async (_e, jobId: string) => getBlenderJob(jobId))
 
 ipcMain.handle('blender:cancel', async (_e, jobId: string) => cancelBlenderJob(jobId))
 
-ipcMain.handle('project:createDemo', async () => {
+async function createProjectFolder(name: string): Promise<{ folder: string; name: string }> {
   const parent = process.env.BLOCKOUT_SMOKE_DIR
     ? process.env.BLOCKOUT_SMOKE_DIR
     : process.env.BLOCKOUT_PROJECTS_DIR?.trim() || join(app.getPath('documents'), '导演预演项目')
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-  const name = '导演预演示例'
   // Two rapid opens must never reuse a folder and overwrite the previous demo.
   const folder = join(parent, `${name}-${stamp}-${randomUUID()}.blockout`)
   for (const child of ['assets', 'exports', 'generated', 'workflows']) {
     await mkdir(join(folder, child), { recursive: true })
   }
   return { folder, name }
+}
+
+ipcMain.handle('project:createDemo', () => createProjectFolder('导演预演示例'))
+ipcMain.handle('project:createProduction', () => createProjectFolder('未命名短剧'))
+
+ipcMain.handle('cloudVideo:keyStatus', (_e, provider: CloudVideoProviderId) => {
+  const definition = getCloudVideoProvider(provider)
+  return {
+    available: Boolean(process.env[definition.apiKeyEnvironmentVariable]?.trim()),
+    environmentVariable: definition.apiKeyEnvironmentVariable
+  }
 })
+
+ipcMain.handle('production:importMedia', (_e, folder: string, path: string) => importProductionMedia(folder, path, probeProductionMedia))
+ipcMain.handle('production:exportFilm', (_e, folder: string, projectId: string) => exportProductionFilm(folder, projectId))
+ipcMain.handle('production:assetJobs', (_e, folder: string, projectId: string) => assetCreationJobs(folder, projectId))
+ipcMain.handle('production:localQwenStatus', (_e, baseUrl: string, password?: string) => localQwenStatus(baseUrl, password))
+ipcMain.handle('production:dismissAsset', (_e, folder: string, id: string) => dismissAssetCreation(folder, id))
+ipcMain.handle('production:generateAsset', (_e, folder: string, projectId: string, id: string, apiKey?: string, input?: import('../engine/production-assets').AssetCreationDraft) => generateProductionAsset(folder, projectId, id, apiKey, probeProductionMedia, input))
+ipcMain.handle('production:list', (_e, folder: string, projectId: string) => listProductionAttempts(folder, projectId))
+ipcMain.handle('production:submit', (_e, folder: string, projectId: string, shotId: string, id: string, apiKey?: string) => submitProductionAttempt(folder, projectId, shotId, id, apiKey))
+ipcMain.handle('production:update', (_e, folder: string, id: string, action: 'query' | 'download' | 'recover' | 'dismiss', apiKey?: string, taskId?: string) => updateProductionAttempt(folder, id, action, apiKey, taskId))
 
 ipcMain.handle('project:save', async (_e, folder: string, json: string) => {
   await mkdir(folder, { recursive: true })
-  // Atomic-ish write: temp file then rename would be ideal; write+fsync is
-  // acceptable here since autosave keeps a rolling backup too.
-  await writeFile(join(folder, 'project.json'), json, 'utf-8')
+  await writeAtomic(join(folder, 'project.json'), json)
   return true
 })
 
 ipcMain.handle('project:saveBackup', async (_e, folder: string, json: string) => {
   await mkdir(join(folder, '.autosave'), { recursive: true })
-  await writeFile(
-    join(folder, '.autosave', 'project.autosave.json'),
-    json,
-    'utf-8'
-  )
+  await writeAtomic(join(folder, '.autosave', 'project.autosave.json'), json)
   return true
 })
 
@@ -475,3 +519,67 @@ ipcMain.handle('app:versions', () => ({
   platform: process.platform,
   productName: app.getName()
 }))
+
+ipcMain.handle('directorCredential:status', async () => {
+  const secure = directorCredentialCipher.available()
+  const saved = secure && !!(await readDirectorCredential(savedDirectorCredentialPath(), directorCredentialCipher))
+  return { saved, secure }
+})
+
+ipcMain.handle('directorCredential:save', async (_e, apiKey: string) => {
+  try {
+    await saveDirectorCredential(savedDirectorCredentialPath(), apiKey, directorCredentialCipher)
+    return { ok: true as const }
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : String(error) }
+  }
+})
+
+ipcMain.handle('directorCredential:clear', async () => {
+  try {
+    await clearDirectorCredential(savedDirectorCredentialPath())
+    return { ok: true as const }
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : String(error) }
+  }
+})
+
+ipcMain.handle(
+  'ai:analyzeScript',
+  async (
+    event,
+    config: { baseUrl: string; model: string; apiKey?: string },
+    sourceText: string,
+    images: import('./script-model').ScriptModelImage[] = [],
+    requestId = `${Date.now()}`
+  ) => {
+    const requestKey = `${event.sender.id}:${requestId}`
+    const previous = directorModelRequests.get(requestKey)
+    previous?.abort()
+    const controller = new AbortController()
+    directorModelRequests.set(requestKey, controller)
+    const { analyzeScriptWithModel } = await import('./script-model')
+    const savedApiKey = config.apiKey?.trim()
+      ? null
+      : await readDirectorCredential(savedDirectorCredentialPath(), directorCredentialCipher)
+    try {
+      return await analyzeScriptWithModel(
+        { ...config, apiKey: config.apiKey?.trim() || savedApiKey || undefined },
+        sourceText,
+        images,
+        controller.signal
+      )
+    } finally {
+      if (directorModelRequests.get(requestKey) === controller) directorModelRequests.delete(requestKey)
+    }
+  }
+)
+
+ipcMain.handle('ai:cancelScript', (event, requestId: string) => {
+  const requestKey = `${event.sender.id}:${requestId}`
+  const controller = directorModelRequests.get(requestKey)
+  if (!controller) return { cancelled: false }
+  controller.abort()
+  directorModelRequests.delete(requestKey)
+  return { cancelled: true }
+})

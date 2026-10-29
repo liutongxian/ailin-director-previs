@@ -295,6 +295,10 @@ export interface PrevisExportRecord {
 }
 
 export interface Shot {
+  productionEdit?: { trimStart?: number; trimEnd?: number; caption?: string }
+  generationInput?: import('./production').GenerationInput
+  productionAttempts?: import('./production').ProductionAttempt[]
+  selectedProductionAttemptId?: string
   id: string
   /** Film-style name, e.g. '1A'. */
   name: string
@@ -377,7 +381,7 @@ export interface Shot {
   }
   /** Last cloud video generation task for this shot. API keys are never stored here. */
   cloudGeneration?: {
-    provider: 'byteplus-las' | 'minimax'
+    provider: 'byteplus-las' | 'minimax' | 'volcengine-ark'
     model: string
     baseUrl: string
     taskId: string
@@ -463,6 +467,12 @@ export interface Scene {
 }
 
 export interface ProjectDoc {
+  productionAssetPlan?: import('./production-asset-plan').ProductionAssetNeed[]
+  productionAssetDraft?: import('./production-assets').AssetCreationDraft
+  productionExport?: { aspect: '16:9' | '9:16' | '1:1'; musicMediaId?: string }
+  productionFilms?: { path: string; subtitlePath: string; duration: number; createdAt: string }[]
+  productionMedia?: import('./production').ProductionMedia[]
+  scriptHistory?: { id: string; name: string; text: string; createdAt: string }[]
   /** Schema version for forward migration. */
   version: 1
   id: string

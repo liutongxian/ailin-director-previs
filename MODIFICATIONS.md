@@ -14,7 +14,7 @@ It also includes Three.js viewport previs export, an MCP/CLI local control
 bridge, and generic Previs IR examples.
 
 This public source snapshot excludes commercial activation, seller tools,
-hosted model integrations, private projects, and licensed distribution
+provider credentials, private projects, and licensed distribution
 artifacts. It is intended to run locally from source with separately installed
 Blender and FFmpeg; no Blender or FFmpeg binaries are included.
 
@@ -30,3 +30,7 @@ workspace. The director-package workspace no longer exposes the separate
 TXT/MD recognition and Previs IR import controls. Existing projects, source
 formats and local export engines remain compatible. Commercial source,
 activation and distribution packages are unchanged and excluded.
+
+## 2026-10-29 · v0.3.0-alpha.1
+
+Add a six-step production workspace: script breakdown via a user-configured text model, editable asset needs and image prompts, versioned image/video/audio references linked to shots, local previs, cloud video attempts and film assembly. Include MiniMax H3, Ark/BytePlus provider adapters, cloud asset-image adapters and a local Unsloth Qwen-Image 2.1 adapter. Store text-model credentials using Electron safeStorage only when requested; other keys/passwords stay in memory or the launching environment. Add atomic project writes and recoverable task receipts. Preserve the public editor and onboarding. No credentials, machine-specific configuration, private production media or commercial activation code are included.

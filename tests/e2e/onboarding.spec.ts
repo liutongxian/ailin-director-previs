@@ -23,7 +23,7 @@ test('the built-in sample guide produces, validates and saves a real MP4', async
   test.setTimeout(180_000)
   const { app, page } = await launch()
   try {
-    await expect(page.getByRole('main', { name: '导演台首页' }).getByRole('button')).toHaveCount(2)
+    await expect(page.getByRole('main', { name: '导演台首页' }).getByRole('button')).toHaveCount(3)
     mkdirSync('tmp/onboarding', { recursive: true })
     await page.screenshot({ path: 'tmp/onboarding/welcome.png' })
     const oldFolder = await page.evaluate(() => (window as any).__blockout.store.getState().projectFolder)

@@ -6,6 +6,7 @@
  */
 
 import { newId } from './ids'
+import { validateProductionFields } from './production'
 import type {
   ActorMark,
   BlockingTake,
@@ -204,6 +205,7 @@ export function validateProject(doc: unknown): ValidationIssue[] {
     return issues
   }
   const p = doc as Record<string, unknown>
+  for (const message of validateProductionFields(p)) err('production', message)
   if (p.version !== 1) err('version', `unsupported schema version ${String(p.version)}`)
   if (typeof p.name !== 'string') err('name', 'missing project name')
   const settings = p.settings as Record<string, unknown> | undefined
