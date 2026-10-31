@@ -1,10 +1,22 @@
 # 艾琳导演台
 
+**简体中文** | [English](README.en.md)
+
 从剧本到分镜、素材、白模预演与视频成片的桌面工作台。适合短剧、漫剧及 AI 视频制作，把每个镜头的描述、参考素材和生成版本放在同一个项目里管理。
 
 **当前版本：0.3.0-alpha.1 开发版 · Windows x64**
 
 [下载 Windows EXE](https://github.com/liutongxian/ailin-director-previs/releases/download/v0.3.0-alpha.1/AilinDirectorPrevis-0.3.0-alpha.1-win-x64.exe) · [发布说明与校验值](https://github.com/liutongxian/ailin-director-previs/releases/tag/v0.3.0-alpha.1) · [全流程使用说明](docs/全流程制作.md)
+
+![导演台真实界面：剧本、分镜、资产、预演和生成设置](media/quickstart/workflow.gif)
+
+*公开虚构示例的真实界面录屏式预览；生成视频页面展示输入设置，不代表已生成云端成片。*
+
+## 不用 API Key，先体验一个项目
+
+[下载公开示例 ZIP](https://github.com/liutongxian/ailin-director-previs/releases/download/v0.3.0-alpha.1/ailin-quickstart.zip) · [示例说明](examples/quickstart/README.md)
+
+解压后，进入“开始全流程制作” → “项目与说明” → “打开项目”，选择 `Quickstart.blockout` 文件夹。里面已准备一段虚构剧本、一个可编辑镜头和三项资产需求与提示词，可以直接查看和修改，不必先配置模型。导出白模需要 FFmpeg；云端生成需另行配置自己的账户。
 
 ## 一套连贯的制作流程
 

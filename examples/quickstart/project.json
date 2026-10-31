@@ -1,0 +1,279 @@
+{
+  "version": 1,
+  "id": "proj_wbgae7fvq001",
+  "name": "双人调度 · 公开入门示例",
+  "settings": {
+    "defaultProfileId": "minimax-h3-ref2va",
+    "comfyConnectionMode": "local",
+    "comfyAutoUpload": true
+  },
+  "referenceAssets": [],
+  "scenes": [
+    {
+      "id": "scene_wbgaebptm006",
+      "name": "房间",
+      "number": 2,
+      "environment": {
+        "lighting": "middaySky",
+        "sunAzimuth": 0.8,
+        "sunElevation": 0.9,
+        "fog": 0
+      },
+      "entities": [
+        {
+          "id": "ent_wbgaeb3y5008",
+          "assetId": "env.houseInterior",
+          "name": "房间白模",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotationY": 0,
+            "scale": 1
+          },
+          "storyboardGenerated": true,
+          "storyboardRole": "environment"
+        },
+        {
+          "id": "ent_wbgaebo1e009",
+          "assetId": "person.man",
+          "name": "人物A",
+          "transform": {
+            "position": {
+              "x": 0.3999999999999999,
+              "y": 0,
+              "z": 0
+            },
+            "rotationY": 0,
+            "scale": 1
+          },
+          "label": {
+            "text": "人物A",
+            "color": "#f0a52b"
+          },
+          "storyboardGenerated": true,
+          "storyboardRole": "character"
+        },
+        {
+          "id": "ent_wbgaebp9z00c",
+          "assetId": "person.man",
+          "name": "人物B",
+          "transform": {
+            "position": {
+              "x": 2.4,
+              "y": 0,
+              "z": 0
+            },
+            "rotationY": 0,
+            "scale": 1
+          },
+          "label": {
+            "text": "人物B",
+            "color": "#2fb8c6"
+          },
+          "storyboardGenerated": true,
+          "storyboardRole": "character"
+        }
+      ],
+      "blocking": [
+        {
+          "id": "take_wbgaebs3c005",
+          "name": "Master",
+          "tracks": [
+            {
+              "entityId": "ent_wbgaebo1e009",
+              "marks": [
+                {
+                  "id": "mark_wbgaebia800a",
+                  "time": 0,
+                  "hold": 0,
+                  "easeIn": 0.25,
+                  "easeOut": 0.25,
+                  "position": {
+                    "x": -4.8,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "gait": "walk",
+                  "arriveHeading": 0
+                },
+                {
+                  "id": "mark_wbgaebpan00b",
+                  "time": 2.0999999999999996,
+                  "hold": 0,
+                  "easeIn": 0.25,
+                  "easeOut": 0.25,
+                  "position": {
+                    "x": -2.4,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "gait": "stand",
+                  "arriveHeading": 0
+                }
+              ]
+            },
+            {
+              "entityId": "ent_wbgaebp9z00c",
+              "marks": [
+                {
+                  "id": "mark_wbgaebxuh00d",
+                  "time": 0,
+                  "hold": 0,
+                  "easeIn": 0.25,
+                  "easeOut": 0.25,
+                  "position": {
+                    "x": 2.4,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "gait": "stand",
+                  "arriveHeading": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "shots": [
+        {
+          "id": "shot_wbgaebc0a007",
+          "name": "双人调度",
+          "duration": 3,
+          "fps": 24,
+          "aspect": "16:9",
+          "blockingTakeId": "take_wbgaebs3c005",
+          "camera": {
+            "sensorId": "super35",
+            "rig": "dolly",
+            "rigIntensity": 0.5,
+            "seed": 699765362,
+            "marks": [
+              {
+                "id": "cmark_wbgaebku100e",
+                "time": 0,
+                "hold": 0,
+                "easeIn": 0.3,
+                "easeOut": 0.3,
+                "position": {
+                  "x": 1.4,
+                  "y": 1.7,
+                  "z": 5.5
+                },
+                "pan": 0,
+                "tilt": -0.09065988720074511,
+                "roll": 0,
+                "focalLength": 50
+              },
+              {
+                "id": "cmark_wbgaebvor00f",
+                "time": 2.8,
+                "hold": 0,
+                "easeIn": 0.3,
+                "easeOut": 0.3,
+                "position": {
+                  "x": 1.4,
+                  "y": 1.7,
+                  "z": 7.3
+                },
+                "pan": 0,
+                "tilt": -0.06838634359050345,
+                "roll": 0,
+                "focalLength": 50
+              }
+            ]
+          },
+          "continuity": {
+            "overlapFramesToNext": 8
+          },
+          "notes": "人物A从画面左侧进入，人物B在右侧等待，摄影机后拉形成双人关系。",
+          "storyboard": {
+            "content": "人物A从画面左侧进入，人物B在右侧等待，摄影机后拉形成双人关系。",
+            "sourceShotId": "SHOT-001",
+            "autoStageSummary": "IR已编译 房间、2 个实体、运动机位。",
+            "autoStageEngine": "previs-ir",
+            "cameraGenerated": true,
+            "sourceName": "双人调度示例.txt"
+          }
+        }
+      ],
+      "scans": []
+    }
+  ],
+  "sourceScript": {
+    "name": "双人调度示例.txt",
+    "text": "人物A从左侧进入房间，人物B在右侧等待。摄影机后拉，最后看到两人的空间关系。3秒，16:9。"
+  },
+  "previsIR": {
+    "name": "智能拆镜",
+    "text": "{\"spec\":\"previs-ir\",\"version\":\"1.0\",\"project\":{\"name\":\"双人调度示例\",\"aspect\":\"16:9\",\"fps\":24},\"assets\":[{\"id\":\"CHAR-A\",\"name\":\"人物A\",\"type\":\"character\",\"semanticType\":\"person\",\"visualDescription\":\"虚构通用人物，以自行选择的参考图确认外观。\",\"imagePrompt\":\"人物A全身设定图，中性站姿，纯色背景；服装和外貌由导演确认。\"},{\"id\":\"CHAR-B\",\"name\":\"人物B\",\"type\":\"character\",\"semanticType\":\"person\",\"visualDescription\":\"虚构通用人物，以自行选择的参考图确认外观。\",\"imagePrompt\":\"人物B全身设定图，中性站姿，纯色背景；服装和外貌由导演确认。\"}],\"locations\":[{\"id\":\"LOC-ROOM\",\"name\":\"房间\",\"semanticType\":\"interior room\",\"imagePrompt\":\"通用室内房间全景，清楚展示入口与两人站位空间，无人物。\"}],\"shots\":[{\"id\":\"SHOT-001\",\"name\":\"双人调度\",\"sourceText\":\"人物A从画面左侧进入，人物B在右侧等待，摄影机后拉形成双人关系。\",\"locationId\":\"LOC-ROOM\",\"duration\":3,\"aspect\":\"16:9\",\"entities\":[{\"refId\":\"CHAR-A\",\"placement\":{\"screen\":\"left\",\"depth\":\"midground\"}},{\"refId\":\"CHAR-B\",\"placement\":{\"screen\":\"right\",\"depth\":\"midground\"}}],\"actions\":[{\"actorId\":\"CHAR-A\",\"type\":\"enter\",\"to\":{\"screen\":\"left\",\"depth\":\"midground\"}}],\"spatialRelations\":[{\"subjectId\":\"CHAR-A\",\"relation\":\"left_of\",\"objectId\":\"CHAR-B\"}],\"camera\":{\"movement\":\"dolly_out\",\"subjects\":[\"CHAR-A\",\"CHAR-B\"]},\"lighting\":{\"preset\":\"day\"}}],\"unresolved\":[]}",
+    "engine": "model-ir"
+  },
+  "productionAssetPlan": [
+    {
+      "id": "need_wbgaeb4dl00g",
+      "sourceId": "CHAR-A",
+      "sourceName": "人物A",
+      "kind": "character",
+      "name": "人物A",
+      "description": "虚构通用人物，以自行选择的参考图确认外观。",
+      "prompt": "人物A全身设定图，中性站姿，纯色背景；服装和外貌由导演确认。\n与所选参考图保持身份、造型和画风一致。单张完整画面，不拼图，不加标题、字幕或标注。",
+      "generatedPrompt": "人物A全身设定图，中性站姿，纯色背景；服装和外貌由导演确认。\n与所选参考图保持身份、造型和画风一致。单张完整画面，不拼图，不加标题、字幕或标注。",
+      "sourceShotIds": [
+        "SHOT-001"
+      ],
+      "autoShotIds": [
+        "shot_wbgaebc0a007"
+      ],
+      "shotIds": [
+        "shot_wbgaebc0a007"
+      ],
+      "referenceIds": [],
+      "mediaIds": []
+    },
+    {
+      "id": "need_wbgaebv1w00h",
+      "sourceId": "CHAR-B",
+      "sourceName": "人物B",
+      "kind": "character",
+      "name": "人物B",
+      "description": "虚构通用人物，以自行选择的参考图确认外观。",
+      "prompt": "人物B全身设定图，中性站姿，纯色背景；服装和外貌由导演确认。\n与所选参考图保持身份、造型和画风一致。单张完整画面，不拼图，不加标题、字幕或标注。",
+      "generatedPrompt": "人物B全身设定图，中性站姿，纯色背景；服装和外貌由导演确认。\n与所选参考图保持身份、造型和画风一致。单张完整画面，不拼图，不加标题、字幕或标注。",
+      "sourceShotIds": [
+        "SHOT-001"
+      ],
+      "autoShotIds": [
+        "shot_wbgaebc0a007"
+      ],
+      "shotIds": [
+        "shot_wbgaebc0a007"
+      ],
+      "referenceIds": [],
+      "mediaIds": []
+    },
+    {
+      "id": "need_wbgaebmpv00i",
+      "sourceId": "LOC-ROOM",
+      "sourceName": "房间",
+      "kind": "scene",
+      "name": "房间",
+      "description": "房间（interior room）。\n分镜依据：人物A从画面左侧进入，人物B在右侧等待，摄影机后拉形成双人关系。\n未明确的外貌、服装或材质请结合参考图检查。",
+      "prompt": "通用室内房间全景，清楚展示入口与两人站位空间，无人物。\n与所选参考图保持身份、造型和画风一致。单张完整画面，不拼图，不加标题、字幕或标注。",
+      "generatedPrompt": "通用室内房间全景，清楚展示入口与两人站位空间，无人物。\n与所选参考图保持身份、造型和画风一致。单张完整画面，不拼图，不加标题、字幕或标注。",
+      "sourceShotIds": [
+        "SHOT-001"
+      ],
+      "autoShotIds": [
+        "shot_wbgaebc0a007"
+      ],
+      "shotIds": [
+        "shot_wbgaebc0a007"
+      ],
+      "referenceIds": [],
+      "mediaIds": []
+    }
+  ]
+}
